@@ -1,9 +1,42 @@
-<div style="text-align: center; padding: 50px;">
-  <h1>{{ title }}</h1>
-  
-  <div style="margin-top: 30px; padding: 20px; border: 2px solid #ccc; border-radius: 10px; max-width: 500px; margin: 30px auto;">
-    <h2>Estado del Backend</h2>
-    <p><strong>Status:</strong> {{ backendStatus }}</p>
-    <p><strong>Mensaje:</strong> {{ backendMessage }}</p>
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+  <!-- Header con logo -->
+  <header style="background-color: rgba(255,255,255,0.95); box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 30px; display: flex; align-items: center; gap: 15px;">
+    <img src="../assets/Elsabor.jpg" alt="El Sabor Limeño" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid #d32f2f;">
+    <h1 style="margin: 0; color: #d32f2f; font-size: 24px;">{{ title }}</h1>
+  </header>
+
+  <!-- Contenido principal -->
+  <div style="text-align: center; padding: 50px 20px; font-family: Arial, sans-serif;">
+    
+    <div [style.background-color]="isConnected ? '#e8f5e9' : '#ffebee'" 
+         style="margin-top: 30px; padding: 30px; border-radius: 15px; max-width: 600px; margin-left: auto; margin-right: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+      
+      <h2 style="margin-top: 0; color: #333;">🔌 Estado de Conexión Backend</h2>
+      
+      <div style="margin: 20px 0;">
+        <p style="font-size: 18px;">
+          <strong>Status:</strong> 
+          <span [style.color]="isConnected ? '#4caf50' : '#f44336'" style="font-weight: bold;">
+            {{ backendStatus }}
+          </span>
+        </p>
+        
+        <p style="font-size: 16px; color: #666;">
+          <strong>Mensaje:</strong> {{ backendMessage }}
+        </p>
+      </div>
+      
+      <div style="margin-top: 20px; padding: 15px; background-color: rgba(255,255,255,0.5); border-radius: 10px;">
+        <p style="font-size: 14px; margin: 0;">
+          {{ isConnected ? '✅ Frontend y Backend están comunicados correctamente' : '❌ Verifica que el backend esté corriendo en http://localhost:8080' }}
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; padding: 25px; background-color: rgba(255,255,255,0.9); border-radius: 15px; max-width: 600px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h3 style="color: #333; margin-top: 0;">ℹ️ Información del Sistema</h3>
+      <p style="margin: 10px 0;"><strong>Frontend:</strong> <code style="background: #f5f5f5; padding: 5px 10px; border-radius: 5px;">http://localhost:4200</code></p>
+      <p style="margin: 10px 0;"><strong>Backend API:</strong> <code style="background: #f5f5f5; padding: 5px 10px; border-radius: 5px;">http://localhost:8080/api</code></p>
+    </div>
   </div>
 </div>

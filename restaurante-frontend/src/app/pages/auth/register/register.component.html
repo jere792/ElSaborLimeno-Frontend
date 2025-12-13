@@ -1,4 +1,4 @@
-<!-- src/app/features/auth/register/register.component.html -->
+<!-- src/app/pages/auth/register/register.component.html -->
 
 <div class="register-container">
   <div class="register-card">
@@ -58,7 +58,7 @@
 
       <!-- Teléfono -->
       <div class="form-group">
-        <label for="telefono">Teléfono</label>
+        <label for="telefono">Teléfono (Opcional)</label>
         <input
           id="telefono"
           type="tel"
@@ -67,7 +67,7 @@
           [class.error]="telefono?.invalid && telefono?.touched"
         />
         <div class="error-message" *ngIf="telefono?.invalid && telefono?.touched">
-          <span *ngIf="telefono?.errors?.['pattern']">Debe tener 9 dígitos</span>
+          <span *ngIf="telefono?.errors?.['pattern']">Debe tener entre 9 y 15 dígitos</span>
         </div>
       </div>
 
@@ -85,9 +85,9 @@
           <button
             type="button"
             class="toggle-password"
-            (click)="togglePasswordVisibility('password')"
+            (click)="togglePasswordVisibility()"
           >
-            {{ showPassword ? '🙈' : '👁️' }}
+            {{ showPassword ? '👁️' : '🙈' }}
           </button>
         </div>
         <div class="error-message" *ngIf="password?.invalid && password?.touched">
@@ -105,38 +105,40 @@
             [type]="showConfirmPassword ? 'text' : 'password'"
             formControlName="confirmPassword"
             placeholder="Repite tu contraseña"
-            [class.error]="confirmPassword?.invalid && confirmPassword?.touched"
+            [class.error]="(confirmPassword?.invalid && confirmPassword?.touched) || (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched)"
           />
           <button
             type="button"
             class="toggle-password"
-            (click)="togglePasswordVisibility('confirmPassword')"
+            (click)="toggleConfirmPasswordVisibility()"
           >
-            {{ showConfirmPassword ? '🙈' : '👁️' }}
+            {{ showConfirmPassword ? '👁️' : '🙈' }}
           </button>
         </div>
-        <div class="error-message" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+        <div class="error-message" *ngIf="confirmPassword?.touched">
           <span *ngIf="confirmPassword?.errors?.['required']">Confirma tu contraseña</span>
-          <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Las contraseñas no coinciden</span>
+          <span *ngIf="registerForm.errors?.['passwordMismatch'] && !confirmPassword?.errors?.['required']">
+            Las contraseñas no coinciden
+          </span>
         </div>
       </div>
 
       <!-- Error Message -->
       <div class="alert alert-danger" *ngIf="errorMessage">
-        {{ errorMessage }}
+        ⚠️ {{ errorMessage }}
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" class="btn-primary" [disabled]="loading">
-        <span *ngIf="!loading">Crear Cuenta</span>
-        <span *ngIf="loading">Creando cuenta...</span>
+      <button type="submit" class="btn-primary" [disabled]="loading || registerForm.invalid">
+        <span *ngIf="!loading">✨ Crear Cuenta</span>
+        <span *ngIf="loading">⏳ Creando cuenta...</span>
       </button>
 
       <!-- Links -->
       <div class="register-links">
         <p>
           ¿Ya tienes cuenta?
-          <a routerLink="/login">Inicia sesión aquí</a>
+          <a routerLink="/login" class="link-primary">Inicia sesión aquí</a>
         </p>
       </div>
     </form>

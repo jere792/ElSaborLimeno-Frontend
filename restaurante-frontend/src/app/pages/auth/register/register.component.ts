@@ -1,10 +1,10 @@
-// src/app/features/auth/register/register.component.ts
+// src/app/pages/auth/register/register.component.ts
 
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, RegistroData, RegistroResponse } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -29,21 +29,23 @@ export class RegisterComponent {
       nombres: ['', [Validators.required, Validators.minLength(2)]],
       apellidos: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+      confirmPassword: ['', [Validators.required]],
+      telefono: ['']
+    }, {
+      validators: this.passwordMatchValidator
+    });
   }
 
-  passwordMatchValidator(form: FormGroup) {
+  passwordMatchValidator(form: FormGroup): { [key: string]: boolean } | null {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
-    
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      confirmPassword.setErrors({ passwordMismatch: true });
-      return { passwordMismatch: true };
+
+    if (!password || !confirmPassword) {
+      return null;
     }
-    return null;
+
+    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
   }
 
   onSubmit(): void {
@@ -55,25 +57,34 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = '';
 
-    const { confirmPassword, ...data } = this.registerForm.value;
+    const data: RegistroData = {
+      nombres: this.registerForm.value.nombres,
+      apellidos: this.registerForm.value.apellidos,
+      email: this.registerForm.value.email,
+      password: this.registerForm.value.password,
+      telefono: this.registerForm.value.telefono || undefined
+    };
 
     this.authService.registro(data).subscribe({
-      next: (response) => {
-        this.router.navigate(['/cliente/menu']);
+      next: (response: RegistroResponse) => {
+        console.log('✅ Registro exitoso:', response);
+        this.loading = false;
+        this.router.navigate(['/cliente/dashboard']);
       },
-      error: (error) => {
-        this.errorMessage = error.error?.mensaje || 'Error al registrar usuario';
+      error: (error: any) => {
+        console.error('❌ Error en registro:', error);
+        this.errorMessage = error.error?.mensaje || 'Error al registrarse';
         this.loading = false;
       }
     });
   }
 
-  togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
-    if (field === 'password') {
-      this.showPassword = !this.showPassword;
-    } else {
-      this.showConfirmPassword = !this.showConfirmPassword;
-    }
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -83,10 +94,27 @@ export class RegisterComponent {
     });
   }
 
-  get nombres() { return this.registerForm.get('nombres'); }
-  get apellidos() { return this.registerForm.get('apellidos'); }
-  get email() { return this.registerForm.get('email'); }
-  get telefono() { return this.registerForm.get('telefono'); }
-  get password() { return this.registerForm.get('password'); }
-  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+  get nombres() {
+    return this.registerForm.get('nombres');
+  }
+
+  get apellidos() {
+    return this.registerForm.get('apellidos');
+  }
+
+  get email() {
+    return this.registerForm.get('email');
+  }
+
+  get password() {
+    return this.registerForm.get('password');
+  }
+
+  get confirmPassword() {
+    return this.registerForm.get('confirmPassword');
+  }
+
+  get telefono() {
+    return this.registerForm.get('telefono');
+  }
 }

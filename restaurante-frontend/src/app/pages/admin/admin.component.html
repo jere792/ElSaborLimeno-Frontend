@@ -1,0 +1,32 @@
+<!-- src/app/pages/admin/admin.component.html -->
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>🍴 El Sabor Limeño</h2>
+      <p>Panel Admin</p>
+    </div>
+    
+    <nav class="menu">
+      <a 
+        *ngFor="let item of menuItems" 
+        [routerLink]="item.path" 
+        routerLinkActive="active"
+        class="menu-item"
+      >
+        <span class="icon">{{ item.icon }}</span>
+        <span class="label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="logout">
+      <button (click)="logout()">🚪 Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,237 @@
+<!-- src/app/pages/admin/usuarios/usuarios.component.html -->
+
+<div class="usuarios-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>👥 Gestión de Usuarios</h1>
+    <button class="btn btn-primary" (click)="abrirModalCrear()">
+      ➕ Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros">
+    <div class="filtro-busqueda">
+      <input
+        type="text"
+        [(ngModel)]="filtros.busqueda"
+        (keyup.enter)="buscar()"
+        placeholder="🔍 Buscar por nombre o email..."
+        class="input-busqueda"
+      />
+      <button (click)="buscar()" class="btn btn-secondary">Buscar</button>
+    </div>
+
+    <div class="filtros-extras">
+      <select (change)="filtrarPorRol($event)" class="select-filtro">
+        <option value="">Todos los roles</option>
+        <option *ngFor="let rol of roles" [value]="rol.Id_Roles">
+          {{ rol.Nombre }}
+        </option>
+      </select>
+
+      <select (change)="filtrarPorEstado($event)" class="select-filtro">
+        <option value="">Todos los estados</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+        <option value="Suspendido">Suspendido</option>
+      </select>
+
+      <select [(ngModel)]="filtros.registrosPorPagina" (change)="cambiarRegistrosPorPagina()" class="select-filtro">
+        <option *ngFor="let opcion of opcionesPorPagina" [value]="opcion">
+          {{ opcion }} por página
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading" class="tabla-container">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Fecha Registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usuario of usuarios">
+          <td>{{ usuario.Id_Usuario }}</td>
+          <td>{{ usuario.Nombres }} {{ usuario.Apellidos }}</td>
+          <td>{{ usuario.Email }}</td>
+          <td>{{ usuario.Telefono || '-' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getRolBadgeClass(usuario.Id_Roles)">
+              {{ usuario.Nombre_Rol }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getEstadoBadgeClass(usuario.Estado)">
+              {{ usuario.Estado }}
+            </span>
+          </td>
+          <td>{{ usuario.Fecha_Registro | date: 'dd/MM/yyyy' }}</td>
+          <td class="acciones">
+            <button (click)="abrirModalEditar(usuario)" class="btn-icon" title="Editar">
+              ✏️
+            </button>
+            <button 
+              *ngIf="usuario.Estado === 'Activo'"
+              (click)="cambiarEstado(usuario, 'Inactivo')" 
+              class="btn-icon" 
+              title="Desactivar">
+              🚫
+            </button>
+            <button 
+              *ngIf="usuario.Estado === 'Inactivo'"
+              (click)="cambiarEstado(usuario, 'Activo')" 
+              class="btn-icon" 
+              title="Activar">
+              ✅
+            </button>
+            <button (click)="eliminarUsuario(usuario)" class="btn-icon btn-danger" title="Eliminar">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Sin resultados -->
+    <div *ngIf="usuarios.length === 0" class="sin-resultados">
+      <p>No se encontraron usuarios</p>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div *ngIf="!loading && totalPaginas > 1" class="paginacion">
+    <button 
+      (click)="cambiarPagina(paginaActual - 1)" 
+      [disabled]="paginaActual === 1"
+      class="btn btn-secondary">
+      ← Anterior
+    </button>
+
+    <span class="info-paginacion">
+      Página {{ paginaActual }} de {{ totalPaginas }} ({{ totalRegistros }} registros)
+    </span>
+
+    <button 
+      (click)="cambiarPagina(paginaActual + 1)" 
+      [disabled]="paginaActual === totalPaginas"
+      class="btn btn-secondary">
+      Siguiente →
+    </button>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="mostrarModal" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ modoModal === 'crear' ? '➕ Nuevo Usuario' : '✏️ Editar Usuario' }}</h2>
+        <button (click)="cerrarModal()" class="btn-close">✖</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="guardarUsuario()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombres *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formulario.nombres" 
+                name="nombres" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Apellidos *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formulario.apellidos" 
+                name="apellidos" 
+                required 
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email *</label>
+              <input 
+                type="email" 
+                [(ngModel)]="formulario.email" 
+                name="email" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Teléfono</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formulario.telefono" 
+                name="telefono" 
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Rol *</label>
+              <select 
+                [(ngModel)]="formulario.id_roles" 
+                name="id_roles" 
+                required>
+                <option *ngFor="let rol of roles" [value]="rol.Id_Roles">
+                  {{ rol.Nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group" *ngIf="modoModal === 'crear'">
+              <label>Contraseña *</label>
+              <input 
+                type="password" 
+                [(ngModel)]="formulario.password" 
+                name="password" 
+                [required]="modoModal === 'crear'" 
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formulario.direccion" 
+              name="direccion" 
+            />
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="cerrarModal()" type="button" class="btn btn-secondary">
+          Cancelar
+        </button>
+        <button (click)="guardarUsuario()" type="button" class="btn btn-primary" [disabled]="loading">
+          {{ loading ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

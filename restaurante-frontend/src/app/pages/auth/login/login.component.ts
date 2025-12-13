@@ -1,4 +1,4 @@
-// src/app/features/auth/login/login.component.ts
+// src/app/pages/auth/login/login.component.ts
 
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -39,16 +39,46 @@ export class LoginComponent {
     this.loading = true;
     this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
+    console.log('🔵 Iniciando login...');
+
+    const credentials = {
+      email: this.loginForm.value.email,
+      password: this.loginForm.value.password
+    };
+
+    this.authService.login(credentials.email, credentials.password).subscribe({
       next: (response) => {
-        const rutaInicio = this.authService.getRutaInicioPorRol(response.usuario.id_rol);
+        console.log('✅ Login exitoso:', response);
+        console.log('🔑 Token guardado:', localStorage.getItem('token'));
+        console.log('👤 Usuario:', response.usuario);
+        console.log('🎭 Rol ID:', response.usuario.id_rol);
+        
+        this.loading = false;
+        
+        // Redirigir según el rol
+        const rutaInicio = this.getRutaPorRol(response.usuario.id_rol);
+        console.log('🚀 Redirigiendo a:', rutaInicio);
+        
         this.router.navigate([rutaInicio]);
       },
       error: (error) => {
-        this.errorMessage = error.error?.mensaje || 'Error al iniciar sesión';
+        console.error('❌ Error en login:', error);
+        this.errorMessage = error.error?.mensaje || 'Credenciales inválidas';
         this.loading = false;
       }
     });
+  }
+
+  getRutaPorRol(idRol: number): string {
+    const rutas: { [key: number]: string } = {
+      1: '/admin/dashboard',      // Admin
+      2: '/cajero/dashboard',     // Cajero
+      3: '/mozo/dashboard',       // Mozo
+      4: '/cocinero/dashboard',   // Cocinero
+      5: '/cliente/dashboard',    // Cliente
+      6: '/repartidor/dashboard'  // Repartidor
+    };
+    return rutas[idRol] || '/';
   }
 
   togglePasswordVisibility(): void {

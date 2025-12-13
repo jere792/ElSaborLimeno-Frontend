@@ -4,7 +4,6 @@ import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { map, catchError, of } from 'rxjs';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -15,19 +14,13 @@ export const authGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  const token = localStorage.getItem('token');
-
-  if (!token) {
-    router.navigate(['/login']);
-    return false;
+  // Verificación simple: si hay token, permite el acceso
+  if (authService.isAuthenticated()) {
+    console.log('✅ Usuario autenticado, acceso permitido');
+    return true;
   }
 
-  return authService.verificarToken().pipe(
-    map(() => true),
-    catchError(() => {
-      localStorage.removeItem('token');
-      router.navigate(['/login']);
-      return of(false);
-    })
-  );
+  console.log('❌ Usuario no autenticado, redirigiendo a login');
+  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+  return false;
 };

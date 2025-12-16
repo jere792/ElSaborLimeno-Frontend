@@ -1,16 +1,18 @@
-<!-- src/app/features/auth/login/login.component.html -->
+<!-- src/app/pages/auth/login/login.component.html -->
 
 <div class="login-container">
   <div class="login-card">
     <div class="login-header">
-      <h1>El Sabor Limeño</h1>
+      <h1>🍴 El Sabor Limeño</h1>
       <p>Iniciar Sesión</p>
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
       <!-- Email -->
       <div class="form-group">
-        <label for="email">Correo Electrónico</label>
+        <label for="email">
+          <i class="bi bi-envelope"></i> Correo Electrónico
+        </label>
         <input
           id="email"
           type="email"
@@ -19,14 +21,16 @@
           [class.error]="email?.invalid && email?.touched"
         />
         <div class="error-message" *ngIf="email?.invalid && email?.touched">
-          <span *ngIf="email?.errors?.['required']">El email es requerido</span>
-          <span *ngIf="email?.errors?.['email']">Email no válido</span>
+          <span *ngIf="email?.errors?.['required']">⚠️ El email es requerido</span>
+          <span *ngIf="email?.errors?.['email']">⚠️ Email no válido</span>
         </div>
       </div>
 
       <!-- Password -->
       <div class="form-group">
-        <label for="password">Contraseña</label>
+        <label for="password">
+          <i class="bi bi-lock"></i> Contraseña
+        </label>
         <div class="password-input">
           <input
             id="password"
@@ -44,28 +48,37 @@
           </button>
         </div>
         <div class="error-message" *ngIf="password?.invalid && password?.touched">
-          <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
-          <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+          <span *ngIf="password?.errors?.['required']">⚠️ La contraseña es requerida</span>
+          <span *ngIf="password?.errors?.['minlength']">⚠️ Mínimo 6 caracteres</span>
         </div>
       </div>
 
       <!-- Error Message -->
       <div class="alert alert-danger" *ngIf="errorMessage">
+        <i class="bi bi-exclamation-triangle"></i>
         {{ errorMessage }}
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" class="btn-primary" [disabled]="loading">
-        <span *ngIf="!loading">Iniciar Sesión</span>
-        <span *ngIf="loading">Cargando...</span>
+      <button type="submit" class="btn-primary" [disabled]="loading || loginForm.invalid">
+        <span *ngIf="!loading">
+          <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+        </span>
+        <span *ngIf="loading">
+          <i class="bi bi-hourglass-split"></i> Cargando...
+        </span>
       </button>
 
       <!-- Links -->
       <div class="login-links">
-        <a routerLink="/oblivion-password">¿Olvidaste tu contraseña?</a>
+        <a routerLink="/auth/oblivion-password">
+          <i class="bi bi-question-circle"></i> ¿Olvidaste tu contraseña?
+        </a>
         <p>
           ¿No tienes cuenta?
-          <a routerLink="/register">Regístrate aquí</a>
+          <a routerLink="/auth/register">
+            <i class="bi bi-person-plus"></i> Regístrate aquí
+          </a>
         </p>
       </div>
     </form>

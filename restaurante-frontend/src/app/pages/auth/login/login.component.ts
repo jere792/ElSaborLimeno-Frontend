@@ -59,7 +59,10 @@ export class LoginComponent {
         const rutaInicio = this.getRutaPorRol(response.usuario.id_rol);
         console.log('🚀 Redirigiendo a:', rutaInicio);
         
-        this.router.navigate([rutaInicio]);
+        // ✅ Agregar delay de 100ms para asegurar que todo se guarde
+        setTimeout(() => {
+          this.router.navigate([rutaInicio]);
+        }, 100);
       },
       error: (error) => {
         console.error('❌ Error en login:', error);
@@ -71,14 +74,14 @@ export class LoginComponent {
 
   getRutaPorRol(idRol: number): string {
     const rutas: { [key: number]: string } = {
-      1: '/admin/dashboard',      // Admin
-      2: '/cajero/dashboard',     // Cajero
-      3: '/mozo/dashboard',       // Mozo
-      4: '/cocinero/dashboard',   // Cocinero
-      5: '/cliente/dashboard',    // Cliente
-      6: '/repartidor/dashboard'  // Repartidor
+      1: '/admin/dashboard',    // ✅ Admin
+      2: '/cajero/home',        // ✅ Cajero (cambiado de dashboard a home)
+      3: '/cliente/home',       // ✅ Cliente (cambiado)
+      4: '/cocinero/dashboard', // Cocinero (por implementar)
+      5: '/repartidor/dashboard', // Repartidor (por implementar)
+      6: '/mozo/dashboard'      // Mozo (por implementar)
     };
-    return rutas[idRol] || '/';
+    return rutas[idRol] || '/auth/login'; // ✅ Por defecto a login
   }
 
   togglePasswordVisibility(): void {

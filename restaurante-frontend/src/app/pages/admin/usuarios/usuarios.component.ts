@@ -3,7 +3,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UsuariosService, Usuario, Rol, FiltrosUsuarios } from '../../../core/services/usuarios.service';
+import { 
+  UsuariosService, 
+  UsuarioListado, 
+  Rol, 
+  FiltrosUsuarios,
+  RespuestaListado,
+  RespuestaRoles,
+  CrearUsuarioDto,
+  ActualizarUsuarioDto
+} from '../../../core/services/usuarios.service';
+import { getRolIcono, getRolBadgeClass } from '../../../shared/constants/roles.constants';
 
 @Component({
   selector: 'app-usuarios',
@@ -13,35 +23,49 @@ import { UsuariosService, Usuario, Rol, FiltrosUsuarios } from '../../../core/se
   styleUrls: ['./usuarios.component.scss']
 })
 export class UsuariosComponent implements OnInit {
-  usuarios: Usuario[] = [];
+  // ==================== PROPIEDADES ====================
+  
+  usuarios: UsuarioListado[] = [];
   roles: Rol[] = [];
   
+  // Modales
+  mostrarModal = false;
+  mostrarModalDetalles = false;
+  modoModal: 'crear' | 'editar' = 'crear';
+  usuarioSeleccionado: UsuarioListado | null = null;
+  usuarioDetalles: UsuarioListado | null = null;
+
+  // Control de estados
+  verInactivos = false;
+  loading = false;
+
+  // Filtros
   filtros: FiltrosUsuarios = {
     pagina: 1,
     registrosPorPagina: 10,
     busqueda: '',
-    estado: '',
     id_rol: undefined
   };
 
+  // Paginación
   totalRegistros = 0;
   totalPaginas = 0;
   paginaActual = 1;
-  
   opcionesPorPagina = [10, 20, 50, 100];
 
-  loading = false;
-  mostrarModal = false;
-  modoModal: 'crear' | 'editar' = 'crear';
-  usuarioSeleccionado: Usuario | null = null;
+  // Math para el template
+  Math = Math;
 
+  // Formulario
   formulario = {
-    id_roles: 5,
+    id_documento: 1,
+    id_roles: 3,
     nombres: '',
     apellidos: '',
     email: '',
     password: '',
     telefono: '',
+    fecha_nacimiento: undefined as Date | undefined,
     genero: '',
     direccion: ''
   };
@@ -53,38 +77,95 @@ export class UsuariosComponent implements OnInit {
     this.cargarUsuarios();
   }
 
+  // ==================== CARGA DE DATOS ====================
+  
   cargarRoles(): void {
     this.usuariosService.obtenerRoles().subscribe({
-      next: (response) => {
+      next: (response: RespuestaRoles) => {
         this.roles = response.roles;
         console.log('✅ Roles cargados:', this.roles);
       },
-      error: (error) => console.error('❌ Error al cargar roles:', error)
+      error: (error: any) => {
+        console.error('❌ Error al cargar roles:', error);
+      }
     });
   }
 
   cargarUsuarios(): void {
     this.loading = true;
-    this.usuariosService.listarUsuarios(this.filtros).subscribe({
-      next: (response) => {
+    
+    const observable = this.verInactivos 
+      ? this.usuariosService.listarUsuariosInactivos(this.filtros)
+      : this.usuariosService.listarUsuariosActivos(this.filtros);
+
+    observable.subscribe({
+      next: (response: RespuestaListado) => {
         this.usuarios = response.usuarios;
         this.totalRegistros = response.paginacion.total_registros;
         this.totalPaginas = response.paginacion.total_paginas;
         this.paginaActual = response.paginacion.pagina_actual;
         this.loading = false;
-        console.log('✅ Usuarios cargados:', this.usuarios.length);
+        console.log(`✅ ${this.usuarios.length} usuarios cargados (${this.verInactivos ? 'inactivos' : 'activos'})`);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('❌ Error al cargar usuarios:', error);
         this.loading = false;
       }
     });
   }
 
+  // ==================== FILTROS ====================
+
   buscar(): void {
     this.filtros.pagina = 1;
     this.cargarUsuarios();
   }
+
+  aplicarFiltros(): void {
+    this.filtros.pagina = 1;
+    this.cargarUsuarios();
+  }
+
+  toggleVerInactivos(): void {
+    this.verInactivos = !this.verInactivos;
+    this.filtros.pagina = 1;
+    this.cargarUsuarios();
+  }
+
+  // ==================== FILTROS ACTIVOS ====================
+
+  tieneFiltrosActivos(): boolean {
+    return !!(this.filtros.busqueda || this.filtros.id_rol);
+  }
+
+  limpiarBusqueda(): void {
+    this.filtros.busqueda = '';
+    this.buscar();
+  }
+
+  limpiarFiltroRol(): void {
+    this.filtros.id_rol = undefined;
+    this.filtros.pagina = 1;
+    this.cargarUsuarios();
+  }
+
+  limpiarTodosFiltros(): void {
+    this.filtros = {
+      pagina: 1,
+      registrosPorPagina: this.filtros.registrosPorPagina,
+      busqueda: '',
+      id_rol: undefined
+    };
+    this.cargarUsuarios();
+  }
+
+  getNombreRol(rolId: number | undefined): string {
+    if (!rolId) return '';
+    const rol = this.roles.find(r => r.Id_Roles === rolId);
+    return rol ? rol.Nombre : '';
+  }
+
+  // ==================== PAGINACIÓN ====================
 
   cambiarPagina(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginas) {
@@ -98,19 +179,7 @@ export class UsuariosComponent implements OnInit {
     this.cargarUsuarios();
   }
 
-  filtrarPorRol(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.filtros.id_rol = target.value ? parseInt(target.value) : undefined;
-    this.filtros.pagina = 1;
-    this.cargarUsuarios();
-  }
-
-  filtrarPorEstado(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.filtros.estado = target.value || '';
-    this.filtros.pagina = 1;
-    this.cargarUsuarios();
-  }
+  // ==================== MODALES ====================
 
   abrirModalCrear(): void {
     this.modoModal = 'crear';
@@ -118,18 +187,20 @@ export class UsuariosComponent implements OnInit {
     this.mostrarModal = true;
   }
 
-  abrirModalEditar(usuario: Usuario): void {
+  abrirModalEditar(usuario: UsuarioListado): void {
     this.modoModal = 'editar';
     this.usuarioSeleccionado = usuario;
     this.formulario = {
+      id_documento: usuario.Id_Documento || 1,
       id_roles: usuario.Id_Roles,
       nombres: usuario.Nombres,
       apellidos: usuario.Apellidos,
       email: usuario.Email,
       password: '',
       telefono: usuario.Telefono || '',
-      genero: '',
-      direccion: ''
+      fecha_nacimiento: usuario.Fecha_Nacimiento,
+      genero: usuario.Genero || '',
+      direccion: usuario.Direccion || ''
     };
     this.mostrarModal = true;
   }
@@ -141,19 +212,37 @@ export class UsuariosComponent implements OnInit {
 
   limpiarFormulario(): void {
     this.formulario = {
-      id_roles: 5,
+      id_documento: 1,
+      id_roles: 3,
       nombres: '',
       apellidos: '',
       email: '',
       password: '',
       telefono: '',
+      fecha_nacimiento: undefined,
       genero: '',
       direccion: ''
     };
     this.usuarioSeleccionado = null;
   }
 
+  abrirModalDetalles(usuario: UsuarioListado): void {
+    this.usuarioDetalles = usuario;
+    this.mostrarModalDetalles = true;
+  }
+
+  cerrarModalDetalles(): void {
+    this.mostrarModalDetalles = false;
+    this.usuarioDetalles = null;
+  }
+
+  // ==================== CRUD ====================
+
   guardarUsuario(): void {
+    if (!this.validarFormulario()) {
+      return;
+    }
+
     if (this.modoModal === 'crear') {
       this.crearUsuario();
     } else {
@@ -161,28 +250,61 @@ export class UsuariosComponent implements OnInit {
     }
   }
 
+  validarFormulario(): boolean {
+    const { nombres, apellidos, email, password, id_roles } = this.formulario;
+
+    if (!nombres || !apellidos || !email || !id_roles) {
+      alert('⚠️ Por favor complete todos los campos requeridos');
+      return false;
+    }
+
+    if (this.modoModal === 'crear' && !password) {
+      alert('⚠️ La contraseña es requerida');
+      return false;
+    }
+
+    if (this.modoModal === 'crear' && password.length < 6) {
+      alert('⚠️ La contraseña debe tener al menos 6 caracteres');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('⚠️ Ingrese un email válido');
+      return false;
+    }
+
+    return true;
+  }
+
   crearUsuario(): void {
     this.loading = true;
     
-    const usuarioData = {
-      ...this.formulario,
+    const usuarioData: CrearUsuarioDto = {
+      id_documento: this.formulario.id_documento,
       id_roles: typeof this.formulario.id_roles === 'string' 
         ? parseInt(this.formulario.id_roles, 10) 
-        : this.formulario.id_roles
+        : this.formulario.id_roles,
+      nombres: this.formulario.nombres.trim(),
+      apellidos: this.formulario.apellidos.trim(),
+      email: this.formulario.email.trim().toLowerCase(),
+      password: this.formulario.password,
+      telefono: this.formulario.telefono?.trim() || undefined,
+      fecha_nacimiento: this.formulario.fecha_nacimiento,
+      genero: this.formulario.genero || undefined,
+      direccion: this.formulario.direccion?.trim() || undefined
     };
-    
-    console.log('📤 Creando usuario:', usuarioData);
 
     this.usuariosService.crearUsuario(usuarioData).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('✅ Usuario creado:', response);
-        alert('Usuario creado exitosamente');
+        alert('✅ Usuario creado exitosamente');
         this.cerrarModal();
         this.cargarUsuarios();
       },
-      error: (error) => {
-        console.error('❌ Error:', error);
-        alert(error.error?.mensaje || 'Error al crear usuario');
+      error: (error: any) => {
+        console.error('❌ Error al crear usuario:', error);
+        alert('❌ ' + (error.error?.mensaje || 'Error al crear usuario'));
         this.loading = false;
       }
     });
@@ -193,66 +315,61 @@ export class UsuariosComponent implements OnInit {
 
     this.loading = true;
     
-    const datos = {
-      ...this.formulario,
+    const datos: ActualizarUsuarioDto = {
+      id_documento: this.formulario.id_documento,
       id_roles: typeof this.formulario.id_roles === 'string' 
         ? parseInt(this.formulario.id_roles, 10) 
-        : this.formulario.id_roles
+        : this.formulario.id_roles,
+      nombres: this.formulario.nombres.trim(),
+      apellidos: this.formulario.apellidos.trim(),
+      email: this.formulario.email.trim().toLowerCase(),
+      telefono: this.formulario.telefono?.trim() || undefined,
+      fecha_nacimiento: this.formulario.fecha_nacimiento,
+      genero: this.formulario.genero || undefined,
+      direccion: this.formulario.direccion?.trim() || undefined
     };
-    
-    delete (datos as any).password;
-
-    console.log('📤 Actualizando usuario:', datos);
 
     this.usuariosService.actualizarUsuario(this.usuarioSeleccionado.Id_Usuario, datos).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('✅ Usuario actualizado:', response);
-        alert('Usuario actualizado exitosamente');
+        alert('✅ Usuario actualizado exitosamente');
         this.cerrarModal();
         this.cargarUsuarios();
       },
-      error: (error) => {
-        console.error('❌ Error:', error);
-        alert(error.error?.mensaje || 'Error al actualizar usuario');
+      error: (error: any) => {
+        console.error('❌ Error al actualizar usuario:', error);
+        alert('❌ ' + (error.error?.mensaje || 'Error al actualizar usuario'));
         this.loading = false;
       }
     });
   }
 
-  cambiarEstado(usuario: Usuario, nuevoEstado: string): void {
-    if (confirm(`¿Cambiar estado a ${nuevoEstado}?`)) {
+  cambiarEstado(usuario: UsuarioListado, nuevoEstado: string): void {
+    const accion = nuevoEstado === 'Activo' ? 'activar' : 'desactivar';
+    
+    if (confirm(`¿Está seguro que desea ${accion} a ${usuario.Nombres} ${usuario.Apellidos}?`)) {
       this.usuariosService.cambiarEstado(usuario.Id_Usuario, nuevoEstado).subscribe({
         next: () => {
-          alert('Estado actualizado');
+          console.log(`✅ Estado cambiado a ${nuevoEstado}`);
+          alert(`✅ Usuario ${nuevoEstado.toLowerCase()} exitosamente`);
           this.cargarUsuarios();
         },
-        error: (error) => alert(error.error?.mensaje || 'Error')
+        error: (error: any) => {
+          console.error('❌ Error al cambiar estado:', error);
+          alert('❌ ' + (error.error?.mensaje || 'Error al cambiar estado'));
+        }
       });
     }
   }
 
-  eliminarUsuario(usuario: Usuario): void {
-    if (confirm(`¿Eliminar a ${usuario.Nombres} ${usuario.Apellidos}?`)) {
-      this.usuariosService.eliminarUsuario(usuario.Id_Usuario).subscribe({
-        next: () => {
-          alert('Usuario eliminado');
-          this.cargarUsuarios();
-        },
-        error: (error) => alert(error.error?.mensaje || 'Error')
-      });
-    }
+  // ==================== HELPERS ====================
+
+  getRolIcon(rolId: number): string {
+    return getRolIcono(rolId);
   }
 
   getRolBadgeClass(rolId: number): string {
-    const clases: { [key: number]: string } = {
-      1: 'badge-admin',
-      2: 'badge-cajero',
-      3: 'badge-mozo',
-      4: 'badge-cocinero',
-      5: 'badge-cliente',
-      6: 'badge-repartidor'
-    };
-    return clases[rolId] || 'badge-default';
+    return getRolBadgeClass(rolId);
   }
 
   getEstadoBadgeClass(estado: string): string {
@@ -262,5 +379,14 @@ export class UsuariosComponent implements OnInit {
       'Suspendido': 'badge-warning'
     };
     return clases[estado] || 'badge-default';
+  }
+
+  getGeneroIcon(genero?: string): string {
+    const iconos: { [key: string]: string } = {
+      'Masculino': '👨',
+      'Femenino': '👩',
+      'Otro': '🧑'
+    };
+    return iconos[genero || ''] || '👤';
   }
 }

@@ -1,0 +1,27 @@
+<!-- src/app/layout/sidebar/sidebar.component.html -->
+
+<aside class="sidebar">
+  <div class="logo">
+    <h2>🍴 {{ titulo }}</h2>
+    <p>{{ subtitulo }}</p>
+  </div>
+  
+  <nav class="menu">
+    <a 
+      *ngFor="let item of menuItems" 
+      [routerLink]="item.path" 
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{exact: false}"
+      class="menu-item"
+    >
+      <span class="icon">{{ item.icon }}</span>
+      <span class="label">{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <div class="logout">
+    <button (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+    </button>
+  </div>
+</aside>

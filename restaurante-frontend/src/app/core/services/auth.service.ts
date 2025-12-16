@@ -1,26 +1,31 @@
 // src/app/core/services/auth.service.ts
 
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
-export interface LoginResponse {
-  mensaje: string;
-  token: string;
-  usuario: {
-    id: number;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono?: string;
-    direccion?: string;
-    id_rol: number;
-    fecha_registro: string;
-  };
+export interface Usuario {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  id_rol: number;
+  nombre_rol?: string;
+  estado?: string;
 }
 
-export interface RegistroData {
+interface LoginResponse {
+  mensaje: string;
+  token: string;
+  usuario: Usuario;
+}
+
+interface RegisterData {
+  id_roles: number;
   nombres: string;
   apellidos: string;
   email: string;
@@ -28,75 +33,141 @@ export interface RegistroData {
   telefono?: string;
 }
 
-export interface RegistroResponse {
-  mensaje: string;
-  token: string;
-  usuario: {
-    id: number;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono?: string;
-    id_rol: number;
-  };
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = 'http://localhost:8080/api';
+  private platformId = inject(PLATFORM_ID);
+  
+  private currentUserSubject = new BehaviorSubject<Usuario | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) {
+    this.loadUserFromStorage();
+  }
+
+  private loadUserFromStorage(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          this.currentUserSubject.next(user);
+          console.log('✅ Usuario cargado al iniciar app:', user);
+        } catch (error) {
+          console.error('❌ Error al parsear usuario:', error);
+        }
+      }
+    }
+  }
+
+  getCurrentUser(): Usuario | null {
+    return this.currentUserSubject.value;
+  }
+
+  getCurrentUser$(): Observable<Usuario | null> {
+    return this.currentUser$;
+  }
 
   login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, password })
-      .pipe(
-        tap(response => {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('usuario', JSON.stringify(response.usuario));
-        })
-      );
+    console.log('🔵 Ejecutando login en AuthService...');
+    
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, {
+      email,
+      password
+    }).pipe(
+      tap(response => {
+        console.log('📦 Respuesta recibida en AuthService:', response);
+        console.log('  - Tiene token?', !!response.token);
+        console.log('  - Tiene usuario?', !!response.usuario);
+        
+        // ✅ SIN verificar success
+        if (response.token && response.usuario) {
+          console.log('💾 EJECUTANDO setSession...');
+          this.setSession(response.token, response.usuario);
+        } else {
+          console.error('❌ Faltan datos en la respuesta');
+        }
+      })
+    );
   }
 
-  registro(data: RegistroData): Observable<RegistroResponse> {
-    return this.http.post<RegistroResponse>(`${this.apiUrl}/registro`, data)
-      .pipe(
-        tap(response => {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('usuario', JSON.stringify(response.usuario));
-        })
-      );
+  register(data: RegisterData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/register`, data);
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    this.router.navigate(['/login']);
+  private setSession(token: string, usuario: Usuario): void {
+    console.log('  🔧 Dentro de setSession()');
+    console.log('  🌐 isPlatformBrowser?', isPlatformBrowser(this.platformId));
+    
+    if (isPlatformBrowser(this.platformId)) {
+      console.log('  📝 Guardando en localStorage...');
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(usuario));
+      
+      console.log('  ✅ Token guardado');
+      console.log('  ✅ Usuario guardado');
+      
+      // Verificar inmediatamente
+      const check = localStorage.getItem('user');
+      console.log('  🔍 Verificación inmediata:', check ? 'ENCONTRADO' : 'NO ENCONTRADO');
+      
+      this.currentUserSubject.next(usuario);
+      console.log('  ✅ BehaviorSubject actualizado');
+    } else {
+      console.error('  ❌ NO está en navegador!');
+    }
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    
+    const token = localStorage.getItem('token');
+    return !!token;
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem('token');
+    }
+    return null;
   }
 
-  getUsuario(): any {
-    const usuario = localStorage.getItem('usuario');
-    return usuario ? JSON.parse(usuario) : null;
+  getUserRole(): number | null {
+    const user = this.getCurrentUser();
+    return user ? user.id_rol : null;
   }
 
-  getRolId(): number | null {
-    const usuario = this.getUsuario();
-    return usuario?.id_rol || null;
+  hasRole(roleId: number): boolean {
+    const userRole = this.getUserRole();
+    return userRole === roleId;
   }
 
-  isAdmin(): boolean {
-    return this.getRolId() === 1;
+  logout(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.currentUserSubject.next(null);
+      console.log('✅ Sesion cerrada');
+      this.router.navigate(['/auth/login']);
+    }
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, {
+      token,
+      newPassword
+    });
   }
 }

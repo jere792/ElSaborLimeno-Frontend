@@ -14,13 +14,12 @@ export const authGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // Verificación simple: si hay token, permite el acceso
   if (authService.isAuthenticated()) {
-    console.log('✅ Usuario autenticado, acceso permitido');
+    console.log('Usuario autenticado, acceso permitido');
     return true;
   }
 
-  console.log('❌ Usuario no autenticado, redirigiendo a login');
-  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+  console.log('Usuario no autenticado, redirigiendo a login');
+  router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url } });
   return false;
 };

@@ -1,25 +1,8 @@
-<!-- src/app/pages/cliente/cliente.component.html -->
-
 <div class="cliente-layout">
-  <header class="header">
-    <div class="logo">
-      <h1>🍴 El Sabor Limeño</h1>
-    </div>
-    
-    <nav class="menu">
-      <a 
-        *ngFor="let item of menuItems" 
-        [routerLink]="item.path" 
-        routerLinkActive="active"
-        class="menu-item"
-      >
-        <span class="icon">{{ item.icon }}</span>
-        <span class="label">{{ item.label }}</span>
-      </a>
-    </nav>
-
-    <button class="logout" (click)="logout()">🚪 Salir</button>
-  </header>
+  <app-sidebar 
+    titulo="El Sabor Limeño" 
+    subtitulo="Mi Cuenta">
+  </app-sidebar>
 
   <main class="content">
     <router-outlet></router-outlet>

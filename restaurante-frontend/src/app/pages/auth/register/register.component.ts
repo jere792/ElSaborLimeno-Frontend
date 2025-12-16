@@ -4,7 +4,23 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, RegistroData, RegistroResponse } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
+
+// ✅ Define las interfaces localmente
+interface RegistroData {
+  id_roles: number;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  password: string;
+  telefono?: string;
+}
+
+interface RegistroResponse {
+  success: boolean;
+  mensaje: string;
+  usuario?: any;
+}
 
 @Component({
   selector: 'app-register',
@@ -58,6 +74,7 @@ export class RegisterComponent {
     this.errorMessage = '';
 
     const data: RegistroData = {
+      id_roles: 3, // ✅ AGREGADO: Cliente por defecto
       nombres: this.registerForm.value.nombres,
       apellidos: this.registerForm.value.apellidos,
       email: this.registerForm.value.email,
@@ -65,11 +82,13 @@ export class RegisterComponent {
       telefono: this.registerForm.value.telefono || undefined
     };
 
-    this.authService.registro(data).subscribe({
+    // ✅ CAMBIADO: registro → register
+    this.authService.register(data).subscribe({
       next: (response: RegistroResponse) => {
         console.log('✅ Registro exitoso:', response);
+        alert('Registro exitoso. Por favor inicia sesión.');
         this.loading = false;
-        this.router.navigate(['/cliente/dashboard']);
+        this.router.navigate(['/auth/login']);
       },
       error: (error: any) => {
         console.error('❌ Error en registro:', error);

@@ -4,7 +4,7 @@ import {
   XhrFactory,
   isPlatformServer,
   parseCookieValue
-} from "./chunk-P5BPAEO5.js";
+} from "./chunk-M7VOYCEU.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -30,7 +30,6 @@ import {
   makeEnvironmentProviders,
   makeStateKey,
   performanceMarkFeature,
-  require_operators,
   runInInjectionContext,
   setClassMetadata,
   signal,
@@ -39,10 +38,13 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-37DKL7UB.js";
+} from "./chunk-BQAPWJFE.js";
+import {
+  require_operators
+} from "./chunk-JRRSQNN4.js";
 import {
   require_cjs
-} from "./chunk-XHQRNRU4.js";
+} from "./chunk-KND52G4T.js";
 import {
   __async,
   __objRest,
@@ -2579,4 +2581,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-HT26B7TQ.js.map
+//# sourceMappingURL=chunk-3T3TLH3K.js.map

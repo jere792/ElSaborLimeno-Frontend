@@ -3,61 +3,103 @@
 <div class="usuarios-container">
   <!-- Header -->
   <div class="header">
-    <h1>👥 Gestión de Usuarios</h1>
-    <button class="btn btn-primary" (click)="abrirModalCrear()">
-      ➕ Nuevo Usuario
-    </button>
+    <h1><i class="bi bi-people-fill"></i> Gestión de Usuarios</h1>
+    <div class="header-actions">
+      <!-- Icono de papelera para ver inactivos / Botón para volver a activos -->
+      <button 
+        *ngIf="!verInactivos"
+        class="btn btn-icon-only btn-trash" 
+        (click)="toggleVerInactivos()"
+        title="Ver usuarios inactivos">
+        <i class="bi bi-trash"></i>
+      </button>
+      
+      <button 
+        *ngIf="verInactivos"
+        class="btn btn-secondary" 
+        (click)="toggleVerInactivos()">
+        <i class="bi bi-arrow-left-circle"></i> Volver a Activos
+      </button>
+
+      <button class="btn btn-primary" (click)="abrirModalCrear()">
+        <i class="bi bi-plus-circle"></i> Nuevo Usuario
+      </button>
+    </div>
   </div>
 
   <!-- Filtros -->
   <div class="filtros">
     <div class="filtro-busqueda">
-      <input
-        type="text"
-        [(ngModel)]="filtros.busqueda"
-        (keyup.enter)="buscar()"
-        placeholder="🔍 Buscar por nombre o email..."
-        class="input-busqueda"
-      />
-      <button (click)="buscar()" class="btn btn-secondary">Buscar</button>
+      <!-- Input de búsqueda -->
+      <div class="input-busqueda-wrapper">
+        <i class="bi bi-search"></i>
+        <input
+          type="text"
+          [(ngModel)]="filtros.busqueda"
+          (input)="buscar()"
+          placeholder="Buscar por nombre, email o teléfono..."
+          class="input-busqueda"
+        />
+      </div>
+
+      <!-- Filtro por Rol -->
+      <select [(ngModel)]="filtros.id_rol" (change)="aplicarFiltros()" class="select-filtro">
+        <option [ngValue]="undefined">🔍 Todos los roles</option>
+        <option *ngFor="let rol of roles" [ngValue]="rol.Id_Roles">
+          {{ getRolIcon(rol.Id_Roles) }} {{ rol.Nombre }}
+        </option>
+      </select>
     </div>
 
-    <div class="filtros-extras">
-      <select (change)="filtrarPorRol($event)" class="select-filtro">
-        <option value="">Todos los roles</option>
-        <option *ngFor="let rol of roles" [value]="rol.Id_Roles">
-          {{ rol.Nombre }}
-        </option>
-      </select>
+    <!-- Tags de filtros activos -->
+    <div class="filtros-activos" *ngIf="tieneFiltrosActivos()">
+      <span class="filtro-tag" *ngIf="filtros.busqueda">
+        <i class="bi bi-search"></i>
+        "{{ filtros.busqueda }}"
+        <button class="tag-close" (click)="limpiarBusqueda()">
+          <i class="bi bi-x"></i>
+        </button>
+      </span>
 
-      <select (change)="filtrarPorEstado($event)" class="select-filtro">
-        <option value="">Todos los estados</option>
-        <option value="Activo">Activo</option>
-        <option value="Inactivo">Inactivo</option>
-        <option value="Suspendido">Suspendido</option>
-      </select>
+      <span class="filtro-tag" *ngIf="filtros.id_rol">
+        <i class="bi bi-person-badge"></i>
+        {{ getNombreRol(filtros.id_rol) }}
+        <button class="tag-close" (click)="limpiarFiltroRol()">
+          <i class="bi bi-x"></i>
+        </button>
+      </span>
 
-      <select [(ngModel)]="filtros.registrosPorPagina" (change)="cambiarRegistrosPorPagina()" class="select-filtro">
-        <option *ngFor="let opcion of opcionesPorPagina" [value]="opcion">
-          {{ opcion }} por página
-        </option>
-      </select>
+      <button class="limpiar-filtros" (click)="limpiarTodosFiltros()">
+        <i class="bi bi-x-circle"></i>
+        Limpiar filtros
+      </button>
     </div>
   </div>
 
   <!-- Loading -->
   <div *ngIf="loading" class="loading">
     <div class="spinner"></div>
-    <p>Cargando...</p>
+    <p>Cargando usuarios...</p>
   </div>
 
   <!-- Tabla -->
   <div *ngIf="!loading" class="tabla-container">
+    <!-- Título de la tabla según estado -->
+    <div class="tabla-header">
+      <h3>
+        <i [class]="verInactivos ? 'bi bi-trash-fill' : 'bi bi-people-fill'"></i>
+        Usuarios {{ verInactivos ? 'Inactivos' : 'Activos' }}
+      </h3>
+      <span class="badge" [ngClass]="verInactivos ? 'badge-danger' : 'badge-success'">
+        {{ totalRegistros }} {{ totalRegistros === 1 ? 'usuario' : 'usuarios' }}
+      </span>
+    </div>
+
     <table class="tabla">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Nombre</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
           <th>Email</th>
           <th>Teléfono</th>
           <th>Rol</th>
@@ -68,13 +110,17 @@
       </thead>
       <tbody>
         <tr *ngFor="let usuario of usuarios">
-          <td>{{ usuario.Id_Usuario }}</td>
-          <td>{{ usuario.Nombres }} {{ usuario.Apellidos }}</td>
-          <td>{{ usuario.Email }}</td>
-          <td>{{ usuario.Telefono || '-' }}</td>
+          <td>{{ usuario.Nombres }}</td>
+          <td>{{ usuario.Apellidos }}</td>
           <td>
-            <span class="badge" [ngClass]="getRolBadgeClass(usuario.Id_Roles)">
-              {{ usuario.Nombre_Rol }}
+            <i class="bi bi-envelope"></i> {{ usuario.Email }}
+          </td>
+          <td>
+            <i class="bi bi-telephone"></i> {{ usuario.Telefono || '-' }}
+          </td>
+          <td>
+            <span class="badge badge-rol" [ngClass]="getRolBadgeClass(usuario.Id_Roles)">
+              {{ getRolIcon(usuario.Id_Roles) }} {{ usuario.Nombre_Rol }}
             </span>
           </td>
           <td>
@@ -84,25 +130,35 @@
           </td>
           <td>{{ usuario.Fecha_Registro | date: 'dd/MM/yyyy' }}</td>
           <td class="acciones">
-            <button (click)="abrirModalEditar(usuario)" class="btn-icon" title="Editar">
-              ✏️
+            <!-- Botón Ver Detalles -->
+            <button 
+              (click)="abrirModalDetalles(usuario)" 
+              class="btn-icon btn-view" 
+              title="Ver detalles">
+              <i class="bi bi-eye"></i>
             </button>
+
+            <button 
+              (click)="abrirModalEditar(usuario)" 
+              class="btn-icon btn-edit" 
+              title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            
+            <!-- Botón para cambiar estado -->
             <button 
               *ngIf="usuario.Estado === 'Activo'"
               (click)="cambiarEstado(usuario, 'Inactivo')" 
-              class="btn-icon" 
+              class="btn-icon btn-disable" 
               title="Desactivar">
-              🚫
+              <i class="bi bi-x-circle"></i>
             </button>
             <button 
-              *ngIf="usuario.Estado === 'Inactivo'"
+              *ngIf="usuario.Estado === 'Inactivo' || usuario.Estado === 'Suspendido'"
               (click)="cambiarEstado(usuario, 'Activo')" 
-              class="btn-icon" 
+              class="btn-icon btn-enable" 
               title="Activar">
-              ✅
-            </button>
-            <button (click)="eliminarUsuario(usuario)" class="btn-icon btn-danger" title="Eliminar">
-              🗑️
+              <i class="bi bi-check-circle"></i>
             </button>
           </td>
         </tr>
@@ -111,124 +167,330 @@
 
     <!-- Sin resultados -->
     <div *ngIf="usuarios.length === 0" class="sin-resultados">
-      <p>No se encontraron usuarios</p>
+      <i [class]="verInactivos ? 'bi bi-trash' : 'bi bi-inbox'"></i>
+      <p>No se encontraron usuarios {{ verInactivos ? 'inactivos' : 'activos' }}</p>
     </div>
   </div>
 
   <!-- Paginación -->
-  <div *ngIf="!loading && totalPaginas > 1" class="paginacion">
-    <button 
-      (click)="cambiarPagina(paginaActual - 1)" 
-      [disabled]="paginaActual === 1"
-      class="btn btn-secondary">
-      ← Anterior
-    </button>
+  <div *ngIf="!loading && totalPaginas > 0" class="paginacion">
+    <div class="paginacion-info">
+      <span class="info-text">
+        <i class="bi bi-file-earmark-text"></i>
+        Mostrando {{ (paginaActual - 1) * (filtros.registrosPorPagina || 10) + 1 }} 
+        a {{ Math.min(paginaActual * (filtros.registrosPorPagina || 10), totalRegistros) }} 
+        de {{ totalRegistros }} registros
+      </span>
+      
+      <select 
+        [(ngModel)]="filtros.registrosPorPagina" 
+        (change)="cambiarRegistrosPorPagina()" 
+        class="select-paginacion">
+        <option *ngFor="let opcion of opcionesPorPagina" [value]="opcion">
+          {{ opcion }} por página
+        </option>
+      </select>
+    </div>
 
-    <span class="info-paginacion">
-      Página {{ paginaActual }} de {{ totalPaginas }} ({{ totalRegistros }} registros)
-    </span>
+    <div class="paginacion-controles">
+      <button 
+        (click)="cambiarPagina(paginaActual - 1)" 
+        [disabled]="paginaActual === 1"
+        class="btn btn-paginacion">
+        <i class="bi bi-chevron-left"></i> Anterior
+      </button>
 
-    <button 
-      (click)="cambiarPagina(paginaActual + 1)" 
-      [disabled]="paginaActual === totalPaginas"
-      class="btn btn-secondary">
-      Siguiente →
-    </button>
+      <span class="pagina-actual">
+        Página {{ paginaActual }} de {{ totalPaginas }}
+      </span>
+
+      <button 
+        (click)="cambiarPagina(paginaActual + 1)" 
+        [disabled]="paginaActual === totalPaginas"
+        class="btn btn-paginacion">
+        Siguiente <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
   </div>
 
-  <!-- Modal -->
-  <div *ngIf="mostrarModal" class="modal-overlay" (click)="cerrarModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
+  <!-- Modal de Detalles -->
+  <div *ngIf="mostrarModalDetalles && usuarioDetalles" class="modal-overlay" (click)="cerrarModalDetalles()">
+    <div class="modal modal-detalles" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>{{ modoModal === 'crear' ? '➕ Nuevo Usuario' : '✏️ Editar Usuario' }}</h2>
-        <button (click)="cerrarModal()" class="btn-close">✖</button>
+        <h2>
+          <i class="bi bi-person-vcard-fill"></i>
+          Detalles del Usuario
+        </h2>
+        <button (click)="cerrarModalDetalles()" class="btn-close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body modal-body-detalles">
+        <!-- Avatar y nombre -->
+        <div class="usuario-card">
+          <div class="usuario-avatar">
+            <i class="bi bi-person-circle"></i>
+          </div>
+          <div class="usuario-info-principal">
+            <h3>{{ usuarioDetalles.Nombres }} {{ usuarioDetalles.Apellidos }}</h3>
+            <span class="badge badge-rol" [ngClass]="getRolBadgeClass(usuarioDetalles.Id_Roles)">
+              {{ getRolIcon(usuarioDetalles.Id_Roles) }} {{ usuarioDetalles.Nombre_Rol }}
+            </span>
+            <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)" style="margin-left: 8px;">
+              {{ usuarioDetalles.Estado }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Información personal -->
+        <div class="seccion-detalles">
+          <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
+          <div class="detalles-grid">
+            <div class="detalle-item">
+              <label><i class="bi bi-hash"></i> ID de Usuario</label>
+              <span>#{{ usuarioDetalles.Id_Usuario }}</span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-person"></i> Nombres</label>
+              <span>{{ usuarioDetalles.Nombres }}</span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-person"></i> Apellidos</label>
+              <span>{{ usuarioDetalles.Apellidos }}</span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+              <span>{{ usuarioDetalles.Genero || 'No especificado' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información de contacto -->
+        <div class="seccion-detalles">
+          <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
+          <div class="detalles-grid">
+            <div class="detalle-item">
+              <label><i class="bi bi-envelope"></i> Email</label>
+              <span>{{ usuarioDetalles.Email }}</span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-telephone"></i> Teléfono</label>
+              <span>{{ usuarioDetalles.Telefono || 'No registrado' }}</span>
+            </div>
+            <div class="detalle-item detalle-item-full">
+              <label><i class="bi bi-geo-alt"></i> Dirección</label>
+              <span>{{ usuarioDetalles.Direccion || 'No registrada' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información del sistema -->
+        <div class="seccion-detalles">
+          <h4><i class="bi bi-gear-fill"></i> Información del Sistema</h4>
+          <div class="detalles-grid">
+            <div class="detalle-item">
+              <label><i class="bi bi-shield-check"></i> Rol</label>
+              <span class="badge badge-rol" [ngClass]="getRolBadgeClass(usuarioDetalles.Id_Roles)">
+                {{ getRolIcon(usuarioDetalles.Id_Roles) }} {{ usuarioDetalles.Nombre_Rol }}
+              </span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-circle-fill"></i> Estado</label>
+              <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)">
+                {{ usuarioDetalles.Estado }}
+              </span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-calendar-check"></i> Fecha de Registro</label>
+              <span>{{ usuarioDetalles.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-clock-history"></i> Antigüedad</label>
+              <span>{{ usuarioDetalles.Fecha_Registro | date: 'mediumDate' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas (si existen) -->
+        <div class="seccion-detalles" *ngIf="usuarioDetalles.Reservas_Canceladas !== undefined">
+          <h4><i class="bi bi-graph-up"></i> Estadísticas</h4>
+          <div class="detalles-grid">
+            <div class="detalle-item">
+              <label><i class="bi bi-x-circle"></i> Reservas Canceladas</label>
+              <span class="badge badge-warning">{{ usuarioDetalles.Reservas_Canceladas || 0 }}</span>
+            </div>
+            <div class="detalle-item">
+              <label><i class="bi bi-person-x"></i> No Show</label>
+              <span class="badge badge-danger">{{ usuarioDetalles.Reservas_NoShow || 0 }}</span>
+            </div>
+            <div class="detalle-item detalle-item-full" *ngIf="usuarioDetalles.Estado_Reservas">
+              <label><i class="bi bi-info-circle"></i> Estado de Reservas</label>
+              <span>{{ usuarioDetalles.Estado_Reservas }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="cerrarModalDetalles()" type="button" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Cerrar
+        </button>
+        <button (click)="abrirModalEditar(usuarioDetalles); cerrarModalDetalles()" type="button" class="btn btn-primary">
+          <i class="bi bi-pencil-square"></i> Editar Usuario
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Crear/Editar -->
+  <div *ngIf="mostrarModal" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal modal-form" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i [class]="modoModal === 'crear' ? 'bi bi-person-plus-fill' : 'bi bi-person-fill-gear'"></i>
+          {{ modoModal === 'crear' ? 'Nuevo Usuario' : 'Editar Usuario' }}
+        </h2>
+        <button (click)="cerrarModal()" class="btn-close">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
 
       <div class="modal-body">
         <form (ngSubmit)="guardarUsuario()">
-          <div class="form-row">
+          
+          <!-- Información Personal -->
+          <div class="form-section">
+            <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="bi bi-person"></i> Nombres *</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="formulario.nombres" 
+                  name="nombres" 
+                  required 
+                  placeholder="Ingrese nombres"
+                />
+              </div>
+
+              <div class="form-group">
+                <label><i class="bi bi-person"></i> Apellidos *</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="formulario.apellidos" 
+                  name="apellidos" 
+                  required 
+                  placeholder="Ingrese apellidos"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+                <select 
+                  [(ngModel)]="formulario.genero" 
+                  name="genero">
+                  <option value="">Seleccione género</option>
+                  <option value="Masculino">👨 Masculino</option>
+                  <option value="Femenino">👩 Femenino</option>
+                  <option value="Otro">🧑 Otro</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="formulario.fecha_nacimiento" 
+                  name="fecha_nacimiento"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de Contacto -->
+          <div class="form-section">
+            <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="bi bi-envelope"></i> Email *</label>
+                <input 
+                  type="email" 
+                  [(ngModel)]="formulario.email" 
+                  name="email" 
+                  required 
+                  placeholder="ejemplo@correo.com"
+                />
+              </div>
+
+              <div class="form-group">
+                <label><i class="bi bi-telephone"></i> Teléfono</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="formulario.telefono" 
+                  name="telefono" 
+                  placeholder="999999999"
+                  maxlength="9"
+                />
+              </div>
+            </div>
+
             <div class="form-group">
-              <label>Nombres *</label>
+              <label><i class="bi bi-geo-alt"></i> Dirección</label>
               <input 
                 type="text" 
-                [(ngModel)]="formulario.nombres" 
-                name="nombres" 
-                required 
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Apellidos *</label>
-              <input 
-                type="text" 
-                [(ngModel)]="formulario.apellidos" 
-                name="apellidos" 
-                required 
+                [(ngModel)]="formulario.direccion" 
+                name="direccion" 
+                placeholder="Dirección completa"
               />
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email *</label>
-              <input 
-                type="email" 
-                [(ngModel)]="formulario.email" 
-                name="email" 
-                required 
-              />
-            </div>
+          <!-- Información del Sistema -->
+          <div class="form-section">
+            <h4><i class="bi bi-gear-fill"></i> Información del Sistema</h4>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="bi bi-shield-check"></i> Rol *</label>
+                <select 
+                  [(ngModel)]="formulario.id_roles" 
+                  name="id_roles" 
+                  required>
+                  <option value="" disabled>Seleccione un rol</option>
+                  <option *ngFor="let rol of roles" [value]="rol.Id_Roles">
+                    {{ getRolIcon(rol.Id_Roles) }} {{ rol.Nombre }}
+                  </option>
+                </select>
+              </div>
 
-            <div class="form-group">
-              <label>Teléfono</label>
-              <input 
-                type="text" 
-                [(ngModel)]="formulario.telefono" 
-                name="telefono" 
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Rol *</label>
-              <select 
-                [(ngModel)]="formulario.id_roles" 
-                name="id_roles" 
-                required>
-                <option *ngFor="let rol of roles" [value]="rol.Id_Roles">
-                  {{ rol.Nombre }}
-                </option>
-              </select>
-            </div>
-
-            <div class="form-group" *ngIf="modoModal === 'crear'">
-              <label>Contraseña *</label>
-              <input 
-                type="password" 
-                [(ngModel)]="formulario.password" 
-                name="password" 
-                [required]="modoModal === 'crear'" 
-              />
+              <div class="form-group" *ngIf="modoModal === 'crear'">
+                <label><i class="bi bi-key"></i> Contraseña *</label>
+                <input 
+                  type="password" 
+                  [(ngModel)]="formulario.password" 
+                  name="password" 
+                  [required]="modoModal === 'crear'" 
+                  placeholder="Mínimo 6 caracteres"
+                  minlength="6"
+                />
+              </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Dirección</label>
-            <input 
-              type="text" 
-              [(ngModel)]="formulario.direccion" 
-              name="direccion" 
-            />
-          </div>
         </form>
       </div>
 
       <div class="modal-footer">
         <button (click)="cerrarModal()" type="button" class="btn btn-secondary">
-          Cancelar
+          <i class="bi bi-x-circle"></i> Cancelar
         </button>
         <button (click)="guardarUsuario()" type="button" class="btn btn-primary" [disabled]="loading">
+          <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
           {{ loading ? 'Guardando...' : 'Guardar' }}
         </button>
       </div>

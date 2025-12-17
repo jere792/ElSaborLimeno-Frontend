@@ -1,16 +1,12 @@
-<!-- src/app/pages/admin/usuarios/usuarios.component.html -->
-
-<div class="usuarios-container">
-  <!-- Header -->
+<div [ngClass]="config.containerClass">
   <div class="header">
-    <h1><i class="bi bi-people-fill"></i> Gestión de Usuarios</h1>
+    <h1><i [class]="'bi ' + config.icono"></i> Gestión de {{ config.nombrePlural }}</h1>
     <div class="header-actions">
-      <!-- Icono de papelera para ver inactivos / Botón para volver a activos -->
       <button 
         *ngIf="!verInactivos"
         class="btn btn-icon-only btn-trash" 
         (click)="toggleVerInactivos()"
-        title="Ver usuarios inactivos">
+        [title]="'Ver ' + config.nombrePlural.toLowerCase() + ' inactivos'">
         <i class="bi bi-trash"></i>
       </button>
       
@@ -22,15 +18,13 @@
       </button>
 
       <button class="btn btn-primary" (click)="abrirModalCrear()">
-        <i class="bi bi-plus-circle"></i> Nuevo Usuario
+        <i class="bi bi-plus-circle"></i> Nuevo {{ config.nombreSingular }}
       </button>
     </div>
   </div>
 
-  <!-- Filtros -->
   <div class="filtros">
     <div class="filtro-busqueda">
-      <!-- Input de búsqueda -->
       <div class="input-busqueda-wrapper">
         <i class="bi bi-search"></i>
         <input
@@ -41,30 +35,13 @@
           class="input-busqueda"
         />
       </div>
-
-      <!-- Filtro por Rol -->
-      <select [(ngModel)]="filtros.id_rol" (change)="aplicarFiltros()" class="select-filtro">
-        <option [ngValue]="undefined">🔍 Todos los roles</option>
-        <option *ngFor="let rol of roles" [ngValue]="rol.Id_Roles">
-          {{ getRolIcon(rol.Id_Roles) }} {{ rol.Nombre }}
-        </option>
-      </select>
     </div>
 
-    <!-- Tags de filtros activos -->
     <div class="filtros-activos" *ngIf="tieneFiltrosActivos()">
       <span class="filtro-tag" *ngIf="filtros.busqueda">
         <i class="bi bi-search"></i>
         "{{ filtros.busqueda }}"
         <button class="tag-close" (click)="limpiarBusqueda()">
-          <i class="bi bi-x"></i>
-        </button>
-      </span>
-
-      <span class="filtro-tag" *ngIf="filtros.id_rol">
-        <i class="bi bi-person-badge"></i>
-        {{ getNombreRol(filtros.id_rol) }}
-        <button class="tag-close" (click)="limpiarFiltroRol()">
           <i class="bi bi-x"></i>
         </button>
       </span>
@@ -76,22 +53,19 @@
     </div>
   </div>
 
-  <!-- Loading -->
   <div *ngIf="loading" class="loading">
     <div class="spinner"></div>
-    <p>Cargando usuarios...</p>
+    <p>Cargando {{ config.nombrePlural.toLowerCase() }}...</p>
   </div>
 
-  <!-- Tabla -->
   <div *ngIf="!loading" class="tabla-container">
-    <!-- Título de la tabla según estado -->
     <div class="tabla-header">
       <h3>
-        <i [class]="verInactivos ? 'bi bi-trash-fill' : 'bi bi-people-fill'"></i>
-        Usuarios {{ verInactivos ? 'Inactivos' : 'Activos' }}
+        <i [class]="verInactivos ? 'bi bi-trash-fill' : 'bi ' + config.icono"></i>
+        {{ config.nombrePlural }} {{ verInactivos ? 'Inactivos' : 'Activos' }}
       </h3>
       <span class="badge" [ngClass]="verInactivos ? 'badge-danger' : 'badge-success'">
-        {{ totalRegistros }} {{ totalRegistros === 1 ? 'usuario' : 'usuarios' }}
+        {{ totalRegistros }} {{ totalRegistros === 1 ? config.nombreSingular.toLowerCase() : config.nombrePlural.toLowerCase() }}
       </span>
     </div>
 
@@ -102,7 +76,6 @@
           <th>Apellidos</th>
           <th>Email</th>
           <th>Teléfono</th>
-          <th>Rol</th>
           <th>Estado</th>
           <th>Fecha Registro</th>
           <th>Acciones</th>
@@ -119,18 +92,12 @@
             <i class="bi bi-telephone"></i> {{ usuario.Telefono || '-' }}
           </td>
           <td>
-            <span class="badge badge-rol" [ngClass]="getRolBadgeClass(usuario.Id_Roles)">
-              {{ getRolIcon(usuario.Id_Roles) }} {{ usuario.Nombre_Rol }}
-            </span>
-          </td>
-          <td>
             <span class="badge" [ngClass]="getEstadoBadgeClass(usuario.Estado)">
               {{ usuario.Estado }}
             </span>
           </td>
           <td>{{ usuario.Fecha_Registro | date: 'dd/MM/yyyy' }}</td>
           <td class="acciones">
-            <!-- Botón Ver Detalles -->
             <button 
               (click)="abrirModalDetalles(usuario)" 
               class="btn-icon btn-view" 
@@ -145,7 +112,6 @@
               <i class="bi bi-pencil-square"></i>
             </button>
             
-            <!-- Botón para cambiar estado -->
             <button 
               *ngIf="usuario.Estado === 'Activo'"
               (click)="cambiarEstado(usuario, 'Inactivo')" 
@@ -165,14 +131,12 @@
       </tbody>
     </table>
 
-    <!-- Sin resultados -->
     <div *ngIf="usuarios.length === 0" class="sin-resultados">
       <i [class]="verInactivos ? 'bi bi-trash' : 'bi bi-inbox'"></i>
-      <p>No se encontraron usuarios {{ verInactivos ? 'inactivos' : 'activos' }}</p>
+      <p>No se encontraron {{ config.nombrePlural.toLowerCase() }} {{ verInactivos ? 'inactivos' : 'activos' }}</p>
     </div>
   </div>
 
-  <!-- Paginación -->
   <div *ngIf="!loading && totalPaginas > 0" class="paginacion">
     <div class="paginacion-info">
       <span class="info-text">
@@ -213,13 +177,12 @@
     </div>
   </div>
 
-  <!-- Modal de Detalles -->
   <div *ngIf="mostrarModalDetalles && usuarioDetalles" class="modal-overlay" (click)="cerrarModalDetalles()">
     <div class="modal modal-detalles" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>
           <i class="bi bi-person-vcard-fill"></i>
-          Detalles del Usuario
+          Detalles del {{ config.nombreSingular }}
         </h2>
         <button (click)="cerrarModalDetalles()" class="btn-close">
           <i class="bi bi-x-lg"></i>
@@ -227,46 +190,41 @@
       </div>
 
       <div class="modal-body modal-body-detalles">
-        <!-- Avatar y nombre -->
         <div class="usuario-card">
           <div class="usuario-avatar">
             <i class="bi bi-person-circle"></i>
           </div>
           <div class="usuario-info-principal">
             <h3>{{ usuarioDetalles.Nombres }} {{ usuarioDetalles.Apellidos }}</h3>
-            <span class="badge badge-rol" [ngClass]="getRolBadgeClass(usuarioDetalles.Id_Roles)">
-              {{ getRolIcon(usuarioDetalles.Id_Roles) }} {{ usuarioDetalles.Nombre_Rol }}
-            </span>
+            <span class="badge" [ngClass]="getBadgeRolClass()">{{ config.emoji }} {{ config.nombreSingular }}</span>
             <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)" style="margin-left: 8px;">
               {{ usuarioDetalles.Estado }}
             </span>
           </div>
         </div>
 
-        <!-- Información personal -->
         <div class="seccion-detalles">
           <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
           <div class="detalles-grid">
             <div class="detalle-item">
-              <label><i class="bi bi-hash"></i> ID de Usuario</label>
-              <span>#{{ usuarioDetalles.Id_Usuario }}</span>
+                <label><i class="bi bi-person"></i> Nombres</label>
+                <span>{{ usuarioDetalles.Nombres }}</span>
             </div>
             <div class="detalle-item">
-              <label><i class="bi bi-person"></i> Nombres</label>
-              <span>{{ usuarioDetalles.Nombres }}</span>
+                <label><i class="bi bi-person"></i> Apellidos</label>
+                <span>{{ usuarioDetalles.Apellidos }}</span>
             </div>
             <div class="detalle-item">
-              <label><i class="bi bi-person"></i> Apellidos</label>
-              <span>{{ usuarioDetalles.Apellidos }}</span>
+                <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+                <span>{{ usuarioDetalles.Genero || 'No especificado' }}</span>
             </div>
             <div class="detalle-item">
-              <label><i class="bi bi-gender-ambiguous"></i> Género</label>
-              <span>{{ usuarioDetalles.Genero || 'No especificado' }}</span>
+                <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
+                <span>{{ usuarioDetalles.Fecha_Nacimiento ? (usuarioDetalles.Fecha_Nacimiento | date: 'dd/MM/yyyy') : 'No registrada' }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Información de contacto -->
         <div class="seccion-detalles">
           <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
           <div class="detalles-grid">
@@ -285,16 +243,9 @@
           </div>
         </div>
 
-        <!-- Información del sistema -->
         <div class="seccion-detalles">
           <h4><i class="bi bi-gear-fill"></i> Información del Sistema</h4>
           <div class="detalles-grid">
-            <div class="detalle-item">
-              <label><i class="bi bi-shield-check"></i> Rol</label>
-              <span class="badge badge-rol" [ngClass]="getRolBadgeClass(usuarioDetalles.Id_Roles)">
-                {{ getRolIcon(usuarioDetalles.Id_Roles) }} {{ usuarioDetalles.Nombre_Rol }}
-              </span>
-            </div>
             <div class="detalle-item">
               <label><i class="bi bi-circle-fill"></i> Estado</label>
               <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)">
@@ -305,29 +256,6 @@
               <label><i class="bi bi-calendar-check"></i> Fecha de Registro</label>
               <span>{{ usuarioDetalles.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</span>
             </div>
-            <div class="detalle-item">
-              <label><i class="bi bi-clock-history"></i> Antigüedad</label>
-              <span>{{ usuarioDetalles.Fecha_Registro | date: 'mediumDate' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Estadísticas (si existen) -->
-        <div class="seccion-detalles" *ngIf="usuarioDetalles.Reservas_Canceladas !== undefined">
-          <h4><i class="bi bi-graph-up"></i> Estadísticas</h4>
-          <div class="detalles-grid">
-            <div class="detalle-item">
-              <label><i class="bi bi-x-circle"></i> Reservas Canceladas</label>
-              <span class="badge badge-warning">{{ usuarioDetalles.Reservas_Canceladas || 0 }}</span>
-            </div>
-            <div class="detalle-item">
-              <label><i class="bi bi-person-x"></i> No Show</label>
-              <span class="badge badge-danger">{{ usuarioDetalles.Reservas_NoShow || 0 }}</span>
-            </div>
-            <div class="detalle-item detalle-item-full" *ngIf="usuarioDetalles.Estado_Reservas">
-              <label><i class="bi bi-info-circle"></i> Estado de Reservas</label>
-              <span>{{ usuarioDetalles.Estado_Reservas }}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -337,19 +265,19 @@
           <i class="bi bi-x-circle"></i> Cerrar
         </button>
         <button (click)="abrirModalEditar(usuarioDetalles); cerrarModalDetalles()" type="button" class="btn btn-primary">
-          <i class="bi bi-pencil-square"></i> Editar Usuario
+          <i class="bi bi-pencil-square"></i> Editar {{ config.nombreSingular }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Crear/Editar -->
+  <!-- MODAL CREAR/EDITAR -->
   <div *ngIf="mostrarModal" class="modal-overlay" (click)="cerrarModal()">
     <div class="modal modal-form" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>
           <i [class]="modoModal === 'crear' ? 'bi bi-person-plus-fill' : 'bi bi-person-fill-gear'"></i>
-          {{ modoModal === 'crear' ? 'Nuevo Usuario' : 'Editar Usuario' }}
+          {{ modoModal === 'crear' ? 'Nuevo ' + config.nombreSingular : 'Editar ' + config.nombreSingular }}
         </h2>
         <button (click)="cerrarModal()" class="btn-close">
           <i class="bi bi-x-lg"></i>
@@ -359,7 +287,6 @@
       <div class="modal-body">
         <form (ngSubmit)="guardarUsuario()">
           
-          <!-- Información Personal -->
           <div class="form-section">
             <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
             
@@ -411,7 +338,6 @@
             </div>
           </div>
 
-          <!-- Información de Contacto -->
           <div class="form-section">
             <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
             
@@ -450,35 +376,19 @@
             </div>
           </div>
 
-          <!-- Información del Sistema -->
-          <div class="form-section">
-            <h4><i class="bi bi-gear-fill"></i> Información del Sistema</h4>
+          <div class="form-section" *ngIf="modoModal === 'crear'">
+            <h4><i class="bi bi-key-fill"></i> Seguridad</h4>
             
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="bi bi-shield-check"></i> Rol *</label>
-                <select 
-                  [(ngModel)]="formulario.id_roles" 
-                  name="id_roles" 
-                  required>
-                  <option value="" disabled>Seleccione un rol</option>
-                  <option *ngFor="let rol of roles" [value]="rol.Id_Roles">
-                    {{ getRolIcon(rol.Id_Roles) }} {{ rol.Nombre }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group" *ngIf="modoModal === 'crear'">
-                <label><i class="bi bi-key"></i> Contraseña *</label>
-                <input 
-                  type="password" 
-                  [(ngModel)]="formulario.password" 
-                  name="password" 
-                  [required]="modoModal === 'crear'" 
-                  placeholder="Mínimo 6 caracteres"
-                  minlength="6"
-                />
-              </div>
+            <div class="form-group">
+              <label><i class="bi bi-key"></i> Contraseña *</label>
+              <input 
+                type="password" 
+                [(ngModel)]="formulario.password" 
+                name="password" 
+                [required]="modoModal === 'crear'" 
+                placeholder="Mínimo 6 caracteres"
+                minlength="6"
+              />
             </div>
           </div>
 

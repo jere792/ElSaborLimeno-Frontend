@@ -86,7 +86,6 @@ export interface ActualizarUsuarioDto {
   direccion?: string;
 }
 
-// ✅ NUEVO: Interfaces para Perfil Propio
 export interface PerfilUsuario {
   Id_Usuario: number;
   Id_Documento?: number;

@@ -1,14 +1,14 @@
-<!-- src/app/pages/admin/perfil-admin/perfil-admin.component.html -->
+<!-- src/app/pages/admin/configuracion-admin/configuracion-admin.component.html -->
 
 <div class="perfil-container">
   
-  <!-- ==================== LOADING INICIAL ==================== -->
+  <!-- LOADING INICIAL -->
   <div *ngIf="loadingPerfil" class="loading-perfil">
     <div class="spinner"></div>
     <p>Cargando perfil...</p>
   </div>
 
-  <!-- ==================== CONTENIDO DEL PERFIL ==================== -->
+  <!-- CONTENIDO DEL PERFIL -->
   <div *ngIf="!loadingPerfil && perfil">
     
     <!-- Header -->
@@ -22,7 +22,7 @@
     <!-- Tarjeta de Perfil -->
     <div class="perfil-card">
       
-      <!-- ==================== HERO SECTION ==================== -->
+      <!-- HERO SECTION -->
       <div class="perfil-hero">
         <div class="perfil-avatar-section">
           <div class="perfil-avatar">
@@ -59,7 +59,7 @@
         </div>
       </div>
 
-      <!-- ==================== TABS ==================== -->
+      <!-- TABS -->
       <div class="perfil-tabs">
         <button 
           class="tab-button" 
@@ -77,10 +77,10 @@
         </button>
       </div>
 
-      <!-- ==================== CONTENIDO DE TABS ==================== -->
+      <!-- CONTENIDO DE TABS -->
       <div class="perfil-content">
         
-        <!-- ========== TAB: INFORMACIÓN PERSONAL ========== -->
+        <!-- TAB: INFORMACIÓN PERSONAL -->
         <div *ngIf="tabActiva === 'informacion'" class="tab-content">
           
           <!-- MODO VISTA -->
@@ -245,7 +245,7 @@
           </div>
         </div>
 
-        <!-- ========== TAB: SEGURIDAD ========== -->
+        <!-- TAB: SEGURIDAD -->
         <div *ngIf="tabActiva === 'seguridad'" class="tab-content">
           <div class="content-header">
             <h3><i class="bi bi-shield-lock"></i> Configuración de Seguridad</h3>
@@ -305,7 +305,6 @@
               </div>
               <div class="seguridad-info">
                 <h4>Información de la Cuenta</h4>
-                <p>ID de usuario: <strong>#{{ perfil.Id_Usuario }}</strong></p>
                 <p>Fecha de registro: <strong>{{ perfil.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</strong></p>
                 <span class="last-change">Estado: <span class="badge badge-success">{{ perfil.Estado }}</span></span>
               </div>
@@ -318,7 +317,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL CAMBIAR CONTRASEÑA ==================== -->
+  <!-- MODAL CAMBIAR CONTRASEÑA -->
   <div *ngIf="mostrarModalPassword" class="modal-overlay" (click)="cerrarModalPassword()">
     <div class="modal modal-password" (click)="$event.stopPropagation()">
       
@@ -436,7 +435,7 @@
     </div>
   </div>
 
-  <!-- ==================== ERROR SI NO HAY PERFIL ==================== -->
+  <!-- ERROR SI NO HAY PERFIL -->
   <div *ngIf="!loadingPerfil && !perfil" class="error-perfil">
     <i class="bi bi-exclamation-triangle"></i>
     <h3>No se pudo cargar el perfil</h3>

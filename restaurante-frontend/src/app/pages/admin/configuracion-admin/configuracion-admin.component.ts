@@ -1,4 +1,4 @@
-// src/app/pages/admin/perfil-admin/perfil-admin.component.ts
+// src/app/pages/admin/configuracion-admin/configuracion-admin.component.ts
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -10,16 +10,28 @@ import {
   CambiarPasswordDto 
 } from '../../../core/services/usuarios.service';
 
+interface FormularioPerfilData {
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+  genero?: string;
+  direccion?: string;
+}
+
 @Component({
-  selector: 'app-perfil-admin',
+  selector: 'app-configuracion-admin',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './perfil-admin.component.html',
-  styleUrls: ['./perfil-admin.component.scss']
+  templateUrl: './configuracion-admin.component.html',
+  styleUrls: ['./configuracion-admin.component.scss']
 })
-export class PerfilAdminComponent implements OnInit {
+export class ConfiguracionAdminComponent implements OnInit {
   perfil: PerfilUsuario | null = null;
-  formularioPerfil: ActualizarPerfilDto = {
+  
+  // ✅ Usar la interfaz local
+  formularioPerfil: FormularioPerfilData = {
     nombres: '',
     apellidos: '',
     email: '',
@@ -50,7 +62,6 @@ export class PerfilAdminComponent implements OnInit {
     this.cargarPerfil();
   }
 
-  // ✅ ACTUALIZADO: Usar obtenerMiPerfil()
   cargarPerfil(): void {
     this.loadingPerfil = true;
 
@@ -72,12 +83,22 @@ export class PerfilAdminComponent implements OnInit {
     if (!this.perfil) return;
 
     this.modoEdicion = true;
+    
+    // ✅ Convertir fecha a formato YYYY-MM-DD
+    let fechaFormateada: string | undefined = undefined;
+    if (this.perfil.Fecha_Nacimiento) {
+      const fecha = new Date(this.perfil.Fecha_Nacimiento);
+      if (!isNaN(fecha.getTime())) {
+        fechaFormateada = fecha.toISOString().split('T')[0];
+      }
+    }
+    
     this.formularioPerfil = {
       nombres: this.perfil.Nombres,
       apellidos: this.perfil.Apellidos,
       email: this.perfil.Email,
       telefono: this.perfil.Telefono || '',
-      fecha_nacimiento: this.perfil.Fecha_Nacimiento,
+      fecha_nacimiento: fechaFormateada,  // ✅ Ahora es string
       genero: this.perfil.Genero || '',
       direccion: this.perfil.Direccion || ''
     };
@@ -88,7 +109,6 @@ export class PerfilAdminComponent implements OnInit {
     this.limpiarFormularioPerfil();
   }
 
-  // ✅ ACTUALIZADO: Usar actualizarMiPerfil()
   guardarPerfil(): void {
     if (!this.validarFormularioPerfil()) {
       return;
@@ -96,13 +116,30 @@ export class PerfilAdminComponent implements OnInit {
 
     this.loading = true;
 
-    this.usuariosService.actualizarMiPerfil(this.formularioPerfil).subscribe({
+    // ✅ Convertir fecha string a Date si existe
+    let fechaNacimiento: Date | undefined = undefined;
+    if (this.formularioPerfil.fecha_nacimiento) {
+      fechaNacimiento = new Date(this.formularioPerfil.fecha_nacimiento);
+    }
+
+    // ✅ Crear objeto con el tipo correcto
+    const datos: ActualizarPerfilDto = {
+      nombres: this.formularioPerfil.nombres,
+      apellidos: this.formularioPerfil.apellidos,
+      email: this.formularioPerfil.email,
+      telefono: this.formularioPerfil.telefono,
+      fecha_nacimiento: fechaNacimiento,  // ✅ Date | undefined
+      genero: this.formularioPerfil.genero,
+      direccion: this.formularioPerfil.direccion
+    };
+
+    this.usuariosService.actualizarMiPerfil(datos).subscribe({
       next: (response) => {
         console.log('✅ Perfil actualizado:', response);
         alert('✅ Perfil actualizado correctamente');
         this.loading = false;
         this.modoEdicion = false;
-        this.cargarPerfil(); // Recargar datos actualizados
+        this.cargarPerfil();
       },
       error: (error) => {
         console.error('❌ Error al actualizar perfil:', error);
@@ -151,7 +188,6 @@ export class PerfilAdminComponent implements OnInit {
     this.limpiarFormularioPassword();
   }
 
-  // ✅ ACTUALIZADO: Usar cambiarMiPassword()
   cambiarPassword(): void {
     if (!this.validarFormularioPassword()) {
       return;

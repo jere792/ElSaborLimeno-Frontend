@@ -1,10 +1,7 @@
 export const ROLES = {
   ADMIN: 1,
   CAJERO: 2,
-  CLIENTE: 3,
-  COCINERO: 4,
-  REPARTIDOR: 5,
-  MOZO: 6
+  CLIENTE: 3
 } as const;
 
 export const ROLES_CONFIG = {
@@ -30,7 +27,6 @@ export const ROLES_CONFIG = {
 
 export type RolId = 1 | 2 | 3;
 
-// Helper functions
 export const getRolNombre = (rolId: number): string => {
   return ROLES_CONFIG[rolId as RolId]?.nombre || 'Desconocido';
 };

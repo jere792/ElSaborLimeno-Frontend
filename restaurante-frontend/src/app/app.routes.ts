@@ -20,8 +20,6 @@ import { OblivionPasswordComponent } from './pages/auth/oblivion-password/oblivi
 // ============================================
 import { AdminComponent } from './pages/admin/admin.component';
 import { DashboardComponent } from './pages/admin/dashboard/dashboard.component';
-import { UsuariosComponent } from './pages/admin/usuarios/usuarios.component';
-import { ProductosComponent as AdminProductosComponent } from './pages/admin/productos/productos.component';
 import { PedidosComponent as AdminPedidosComponent } from './pages/admin/pedidos/pedidos.component';
 import { ReportesComponent } from './pages/admin/reportes/reportes.component';
 
@@ -43,7 +41,17 @@ import { MenuComponent } from './pages/cliente/menu/menu.component';
 import { CarritoComponent } from './pages/cliente/carrito/carrito.component';
 import { PedidosComponent as ClientePedidosComponent } from './pages/cliente/pedidos/pedidos.component';
 import { PerfilComponent } from './pages/cliente/perfil/perfil.component';
-import { PerfilAdminComponent } from './pages/admin/perfil-admin/perfil-admin.component';
+import { ConfiguracionAdminComponent } from './pages/admin/configuracion-admin/configuracion-admin.component';
+import { PlatillosComponent } from './pages/admin/menu/platillos/platillos.component';
+import { CategoriaComponent } from './pages/admin/menu/categoria/categoria.component';
+import { MesasComponent } from './pages/admin/mesas/mesas.component';
+import { ReservasComponent } from './pages/admin/reservas/reservas.component';
+import { PromocionesComponent } from './pages/admin/promociones/promociones.component';
+import { TurnosComponent } from './pages/admin/turnos/turnos.component';
+import { PagosEmpleadosComponent } from './pages/admin/pagos-empleados/pagos-empleados.component';
+import { GestionClientesComponent } from './pages/admin/usuarios/gestion-clientes/gestion-clientes.component';
+import { GestionCajerosComponent } from './pages/admin/usuarios/gestion-cajero/gestion-cajeros.component';
+import { GestionAdminComponent } from './pages/admin/usuarios/gestion-admin/gestion-admin.component';
 
 // ============================================
 // RUTAS
@@ -74,11 +82,19 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'usuarios', component: UsuariosComponent },
-      { path: 'productos', component: AdminProductosComponent },
+      { path: 'platillos', component: PlatillosComponent },
+      { path: 'categorias', component: CategoriaComponent },
+      { path: 'mesas', component: MesasComponent },
+      { path: 'reservaciones', component: ReservasComponent },
       { path: 'pedidos', component: AdminPedidosComponent },
-      { path: 'reportes', component: ReportesComponent },
-      { path: 'perfil-admin', component: PerfilAdminComponent }
+      { path: 'promociones', component: PromocionesComponent },
+      { path: 'gestion-clientes', component: GestionClientesComponent },
+      { path: 'gestion-cajeros', component: GestionCajerosComponent },
+      { path: 'gestion-admin', component: GestionAdminComponent },
+      { path: 'turnos', component: TurnosComponent },
+      { path: 'pagos-empleados', component: PagosEmpleadosComponent },
+      { path: 'ventas', component: ReportesComponent },
+      { path: 'configuracion-admin', component: ConfiguracionAdminComponent }
     ]
   },
 

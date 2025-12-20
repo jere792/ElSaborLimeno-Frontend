@@ -1,55 +1,76 @@
 <!-- src/app/layout/sidebar/sidebar.component.html -->
 
 <aside class="sidebar">
-
-  <div class="logo">
-    <h2>🍴 {{ titulo }}</h2>
-    <p>{{ subtitulo }}</p>
+  <!-- Header -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="bi bi-egg-fried"></i>
+      <div class="logo-text">
+        <h3>{{ titulo }}</h3>
+        <p>{{ subtitulo }}</p>
+      </div>
+    </div>
   </div>
 
-  <nav class="menu">
-    <div *ngFor="let item of menuItems" class="menu-wrapper">
-      
-      <a 
-        *ngIf="!item.subItems"
-        [routerLink]="item.path" 
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{exact: false}"
-        class="menu-item">
-        <i class="bi {{ item.icon }}"></i>
-        <span class="label">{{ item.label }}</span>
-      </a>
-
-      <div *ngIf="item.subItems" class="menu-group">
-
-        <button 
-          class="menu-item menu-item-expandable"
-          [class.expanded]="isSubmenuExpanded(item.label)"
-          (click)="toggleSubmenu(item.label)">
-          <i class="bi {{ item.icon }}"></i>
-          <span class="label">{{ item.label }}</span>
-          <i class="bi bi-chevron-down submenu-arrow"></i>
-        </button>
-
-        <div class="submenu" *ngIf="isSubmenuExpanded(item.label)">
-          <a 
-            *ngFor="let subItem of item.subItems"
-            [routerLink]="subItem.path" 
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{exact: false}"
-            class="submenu-item">
-            <i class="bi {{ subItem.icon }}"></i>
-            <span class="label">{{ subItem.label }}</span>
-          </a>
-        </div>
-      </div>
-
+  <!-- ✅ BOTÓN VOLVER (Solo para admin en otra vista) -->
+  <div *ngIf="esAdmin() && !enVistaOriginal()" class="vista-alert">
+    <div class="vista-info">
+      <i class="bi bi-eye-fill"></i>
+      <span>Vista: <strong>{{ getNombreVistaActual() }}</strong></span>
     </div>
+    <button (click)="volverVistaAdmin()" class="btn-volver">
+      <i class="bi bi-arrow-left-circle"></i>
+      Volver a Admin
+    </button>
+  </div>
+
+  <!-- Menú -->
+  <nav class="sidebar-nav">
+    <ul>
+      <li *ngFor="let item of menuItems">
+        
+        <!-- Item sin subitems -->
+        <a 
+          *ngIf="!item.subItems"
+          [routerLink]="item.path" 
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+
+        <!-- Item con subitems -->
+        <div *ngIf="item.subItems" class="menu-item-with-submenu">
+          <a (click)="toggleSubmenu(item.label)" class="submenu-trigger">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+            <i class="bi bi-chevron-down toggle-icon" 
+               [class.rotated]="isSubmenuExpanded(item.label)"></i>
+          </a>
+
+          <!-- Submenu -->
+          <ul class="submenu" [class.expanded]="isSubmenuExpanded(item.label)">
+            <li *ngFor="let subItem of item.subItems">
+              <a 
+                [routerLink]="subItem.path" 
+                routerLinkActive="active"
+                (click)="onSubItemClick(subItem)"
+                class="sub-item">
+                <i [class]="subItem.icon"></i>
+                <span>{{ subItem.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ul>
   </nav>
 
-  <div class="logout">
-    <button (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <button (click)="logout()" class="btn-logout">
+      <i class="bi bi-box-arrow-left"></i>
+      <span>Cerrar Sesión</span>
     </button>
   </div>
 </aside>

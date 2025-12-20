@@ -1,7 +1,7 @@
 // src/app/pages/cajero/cajero.component.ts
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
 
@@ -9,10 +9,9 @@ import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
   selector: 'app-cajero',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterOutlet, 
-    SidebarComponent // ✅ AGREGADO
-  ],
+    RouterOutlet,
+    SidebarComponent
+],
   templateUrl: './cajero.component.html',
   styleUrls: ['./cajero.component.scss']
 })

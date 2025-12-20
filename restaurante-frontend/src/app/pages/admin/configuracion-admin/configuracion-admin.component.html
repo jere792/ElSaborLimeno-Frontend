@@ -1,448 +1,425 @@
 <!-- src/app/pages/admin/configuracion-admin/configuracion-admin.component.html -->
 
 <div class="perfil-container">
-  
+
   <!-- LOADING INICIAL -->
-  <div *ngIf="loadingPerfil" class="loading-perfil">
-    <div class="spinner"></div>
-    <p>Cargando perfil...</p>
-  </div>
+  @if (loadingPerfil) {
+    <div class="loading-perfil">
+      <div class="spinner"></div>
+      <p>Cargando perfil...</p>
+    </div>
+  }
 
   <!-- CONTENIDO DEL PERFIL -->
-  <div *ngIf="!loadingPerfil && perfil">
-    
-    <!-- Header -->
-    <div class="perfil-header">
-      <div class="perfil-header-info">
-        <h1><i class="bi bi-person-circle"></i> Mi Perfil</h1>
-        <p>Gestiona tu información personal y configuración de seguridad</p>
+  @if (!loadingPerfil && perfil) {
+    <div>
+      <!-- Header -->
+      <div class="perfil-header">
+        <div class="perfil-header-info">
+          <h1><i class="bi bi-person-circle"></i> Mi Perfil</h1>
+          <p>Gestiona tu información personal y configuración de seguridad</p>
+        </div>
       </div>
-    </div>
-
-    <!-- Tarjeta de Perfil -->
-    <div class="perfil-card">
-      
-      <!-- HERO SECTION -->
-      <div class="perfil-hero">
-        <div class="perfil-avatar-section">
-          <div class="perfil-avatar">
-            <span class="avatar-iniciales">{{ obtenerIniciales() }}</span>
-          </div>
-          <div class="avatar-badge">
-            <i class="bi bi-shield-check"></i>
-          </div>
-        </div>
-        
-        <div class="perfil-info-principal">
-          <h2>{{ perfil.Nombres }} {{ perfil.Apellidos }}</h2>
-          <p class="perfil-email"><i class="bi bi-envelope"></i> {{ perfil.Email }}</p>
-          <span class="badge badge-admin">
-            <i class="bi bi-shield-fill"></i> {{ perfil.Nombre_Rol }}
-          </span>
-        </div>
-
-        <div class="perfil-stats">
-          <div class="stat-item">
-            <i class="bi bi-calendar-check"></i>
-            <div class="stat-info">
-              <span class="stat-label">Miembro desde</span>
-              <span class="stat-value">{{ perfil.Fecha_Registro | date: 'MMM yyyy' }}</span>
+      <!-- Tarjeta de Perfil -->
+      <div class="perfil-card">
+        <!-- HERO SECTION -->
+        <div class="perfil-hero">
+          <div class="perfil-avatar-section">
+            <div class="perfil-avatar">
+              <span class="avatar-iniciales">{{ obtenerIniciales() }}</span>
+            </div>
+            <div class="avatar-badge">
+              <i class="bi bi-shield-check"></i>
             </div>
           </div>
-          <div class="stat-item">
-            <i class="bi bi-clock-history"></i>
-            <div class="stat-info">
-              <span class="stat-label">Antigüedad</span>
-              <span class="stat-value">{{ calcularAntiguedad() }}</span>
+          <div class="perfil-info-principal">
+            <h2>{{ perfil.Nombres }} {{ perfil.Apellidos }}</h2>
+            <p class="perfil-email"><i class="bi bi-envelope"></i> {{ perfil.Email }}</p>
+            <span class="badge badge-admin">
+              <i class="bi bi-shield-fill"></i> {{ perfil.Nombre_Rol }}
+            </span>
+          </div>
+          <div class="perfil-stats">
+            <div class="stat-item">
+              <i class="bi bi-calendar-check"></i>
+              <div class="stat-info">
+                <span class="stat-label">Miembro desde</span>
+                <span class="stat-value">{{ perfil.Fecha_Registro | date: 'MMM yyyy' }}</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <i class="bi bi-clock-history"></i>
+              <div class="stat-info">
+                <span class="stat-label">Antigüedad</span>
+                <span class="stat-value">{{ calcularAntiguedad() }}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- TABS -->
-      <div class="perfil-tabs">
-        <button 
-          class="tab-button" 
-          [class.active]="tabActiva === 'informacion'"
-          (click)="cambiarTab('informacion')">
-          <i class="bi bi-person-fill"></i>
-          Información Personal
-        </button>
-        <button 
-          class="tab-button" 
-          [class.active]="tabActiva === 'seguridad'"
-          (click)="cambiarTab('seguridad')">
-          <i class="bi bi-shield-lock-fill"></i>
-          Seguridad
-        </button>
-      </div>
-
-      <!-- CONTENIDO DE TABS -->
-      <div class="perfil-content">
-        
-        <!-- TAB: INFORMACIÓN PERSONAL -->
-        <div *ngIf="tabActiva === 'informacion'" class="tab-content">
-          
-          <!-- MODO VISTA -->
-          <div *ngIf="!modoEdicion" class="vista-modo">
-            <div class="content-header">
-              <h3><i class="bi bi-person-vcard"></i> Información Personal</h3>
-              <button class="btn btn-primary" (click)="activarModoEdicion()">
-                <i class="bi bi-pencil-square"></i> Editar Perfil
-              </button>
-            </div>
-
-            <div class="info-grid">
-              <div class="info-item">
-                <label><i class="bi bi-person"></i> Nombres</label>
-                <span>{{ perfil.Nombres }}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-person"></i> Apellidos</label>
-                <span>{{ perfil.Apellidos }}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-envelope"></i> Email</label>
-                <span>{{ perfil.Email }}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-telephone"></i> Teléfono</label>
-                <span>{{ perfil.Telefono || 'No registrado' }}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-gender-ambiguous"></i> Género</label>
-                <span>{{ perfil.Genero ? (getGeneroIcon(perfil.Genero) + ' ' + perfil.Genero) : 'No especificado' }}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
-                <span>{{ perfil.Fecha_Nacimiento ? (perfil.Fecha_Nacimiento | date: 'dd/MM/yyyy') : 'No registrada' }}</span>
-              </div>
-              <div class="info-item info-item-full">
-                <label><i class="bi bi-geo-alt"></i> Dirección</label>
-                <span>{{ perfil.Direccion || 'No registrada' }}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-shield-check"></i> Rol</label>
-                <span class="badge badge-admin">
-                  <i class="bi bi-shield-fill"></i> {{ perfil.Nombre_Rol }}
-                </span>
-              </div>
-              <div class="info-item">
-                <label><i class="bi bi-circle-fill"></i> Estado</label>
-                <span class="badge badge-success">{{ perfil.Estado }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- MODO EDICIÓN -->
-          <div *ngIf="modoEdicion" class="edicion-modo">
-            <div class="content-header">
-              <h3><i class="bi bi-pencil-square"></i> Editar Información Personal</h3>
-            </div>
-
-            <form (ngSubmit)="guardarPerfil()">
-              
-              <!-- Datos Personales -->
-              <div class="form-section">
-                <h4><i class="bi bi-person-fill"></i> Datos Personales</h4>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label><i class="bi bi-person"></i> Nombres *</label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="formularioPerfil.nombres" 
-                      name="nombres" 
-                      required 
-                      placeholder="Ingrese nombres"
-                    />
+        <!-- TABS -->
+        <div class="perfil-tabs">
+          <button
+            class="tab-button"
+            [class.active]="tabActiva === 'informacion'"
+            (click)="cambiarTab('informacion')">
+            <i class="bi bi-person-fill"></i>
+            Información Personal
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="tabActiva === 'seguridad'"
+            (click)="cambiarTab('seguridad')">
+            <i class="bi bi-shield-lock-fill"></i>
+            Seguridad
+          </button>
+        </div>
+        <!-- CONTENIDO DE TABS -->
+        <div class="perfil-content">
+          <!-- TAB: INFORMACIÓN PERSONAL -->
+          @if (tabActiva === 'informacion') {
+            <div class="tab-content">
+              <!-- MODO VISTA -->
+              @if (!modoEdicion) {
+                <div class="vista-modo">
+                  <div class="content-header">
+                    <h3><i class="bi bi-person-vcard"></i> Información Personal</h3>
+                    <button class="btn btn-primary" (click)="activarModoEdicion()">
+                      <i class="bi bi-pencil-square"></i> Editar Perfil
+                    </button>
                   </div>
-
-                  <div class="form-group">
-                    <label><i class="bi bi-person"></i> Apellidos *</label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="formularioPerfil.apellidos" 
-                      name="apellidos" 
-                      required 
-                      placeholder="Ingrese apellidos"
-                    />
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <label><i class="bi bi-person"></i> Nombres</label>
+                      <span>{{ perfil.Nombres }}</span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-person"></i> Apellidos</label>
+                      <span>{{ perfil.Apellidos }}</span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-envelope"></i> Email</label>
+                      <span>{{ perfil.Email }}</span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-telephone"></i> Teléfono</label>
+                      <span>{{ perfil.Telefono || 'No registrado' }}</span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+                      <span>{{ perfil.Genero ? (getGeneroIcon(perfil.Genero) + ' ' + perfil.Genero) : 'No especificado' }}</span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
+                      <span>{{ perfil.Fecha_Nacimiento ? (perfil.Fecha_Nacimiento | date: 'dd/MM/yyyy') : 'No registrada' }}</span>
+                    </div>
+                    <div class="info-item info-item-full">
+                      <label><i class="bi bi-geo-alt"></i> Dirección</label>
+                      <span>{{ perfil.Direccion || 'No registrada' }}</span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-shield-check"></i> Rol</label>
+                      <span class="badge badge-admin">
+                        <i class="bi bi-shield-fill"></i> {{ perfil.Nombre_Rol }}
+                      </span>
+                    </div>
+                    <div class="info-item">
+                      <label><i class="bi bi-circle-fill"></i> Estado</label>
+                      <span class="badge badge-success">{{ perfil.Estado }}</span>
+                    </div>
                   </div>
                 </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label><i class="bi bi-gender-ambiguous"></i> Género</label>
-                    <select [(ngModel)]="formularioPerfil.genero" name="genero">
-                      <option value="">Seleccione género</option>
-                      <option value="Masculino">👨 Masculino</option>
-                      <option value="Femenino">👩 Femenino</option>
-                      <option value="Otro">🧑 Otro</option>
-                    </select>
+              }
+              <!-- MODO EDICIÓN -->
+              @if (modoEdicion) {
+                <div class="edicion-modo">
+                  <div class="content-header">
+                    <h3><i class="bi bi-pencil-square"></i> Editar Información Personal</h3>
                   </div>
-
-                  <div class="form-group">
-                    <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
-                    <input 
-                      type="date" 
-                      [(ngModel)]="formularioPerfil.fecha_nacimiento" 
-                      name="fecha_nacimiento"
-                    />
+                  <form (ngSubmit)="guardarPerfil()">
+                    <!-- Datos Personales -->
+                    <div class="form-section">
+                      <h4><i class="bi bi-person-fill"></i> Datos Personales</h4>
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label><i class="bi bi-person"></i> Nombres *</label>
+                          <input
+                            type="text"
+                            [(ngModel)]="formularioPerfil.nombres"
+                            name="nombres"
+                            required
+                            placeholder="Ingrese nombres"
+                            />
+                          </div>
+                          <div class="form-group">
+                            <label><i class="bi bi-person"></i> Apellidos *</label>
+                            <input
+                              type="text"
+                              [(ngModel)]="formularioPerfil.apellidos"
+                              name="apellidos"
+                              required
+                              placeholder="Ingrese apellidos"
+                              />
+                            </div>
+                          </div>
+                          <div class="form-row">
+                            <div class="form-group">
+                              <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+                              <select [(ngModel)]="formularioPerfil.genero" name="genero">
+                                <option value="">Seleccione género</option>
+                                <option value="Masculino">👨 Masculino</option>
+                                <option value="Femenino">👩 Femenino</option>
+                                <option value="Otro">🧑 Otro</option>
+                              </select>
+                            </div>
+                            <div class="form-group">
+                              <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
+                              <input
+                                type="date"
+                                [(ngModel)]="formularioPerfil.fecha_nacimiento"
+                                name="fecha_nacimiento"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <!-- Información de Contacto -->
+                          <div class="form-section">
+                            <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
+                            <div class="form-row">
+                              <div class="form-group">
+                                <label><i class="bi bi-envelope"></i> Email *</label>
+                                <input
+                                  type="email"
+                                  [(ngModel)]="formularioPerfil.email"
+                                  name="email"
+                                  required
+                                  placeholder="ejemplo@correo.com"
+                                  />
+                                </div>
+                                <div class="form-group">
+                                  <label><i class="bi bi-telephone"></i> Teléfono</label>
+                                  <input
+                                    type="text"
+                                    [(ngModel)]="formularioPerfil.telefono"
+                                    name="telefono"
+                                    placeholder="999999999"
+                                    maxlength="9"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label><i class="bi bi-geo-alt"></i> Dirección</label>
+                                  <input
+                                    type="text"
+                                    [(ngModel)]="formularioPerfil.direccion"
+                                    name="direccion"
+                                    placeholder="Dirección completa"
+                                    />
+                                  </div>
+                                </div>
+                                <!-- Botones de Acción -->
+                                <div class="form-actions">
+                                  <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                  </button>
+                                  <button type="submit" class="btn btn-primary" [disabled]="loading">
+                                    <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+                                    {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
+                                  </button>
+                                </div>
+                              </form>
+                            </div>
+                          }
+                        </div>
+                      }
+                      <!-- TAB: SEGURIDAD -->
+                      @if (tabActiva === 'seguridad') {
+                        <div class="tab-content">
+                          <div class="content-header">
+                            <h3><i class="bi bi-shield-lock"></i> Configuración de Seguridad</h3>
+                          </div>
+                          <div class="seguridad-section">
+                            <!-- Cambiar Contraseña -->
+                            <div class="seguridad-item">
+                              <div class="seguridad-icon">
+                                <i class="bi bi-key-fill"></i>
+                              </div>
+                              <div class="seguridad-info">
+                                <h4>Contraseña</h4>
+                                <p>Cambia tu contraseña regularmente para mantener tu cuenta segura</p>
+                                <span class="last-change">Se recomienda cambiarla cada 3 meses</span>
+                              </div>
+                              <button class="btn btn-primary" (click)="abrirModalPassword()">
+                                <i class="bi bi-key"></i> Cambiar Contraseña
+                              </button>
+                            </div>
+                            <!-- Autenticación de Dos Factores -->
+                            <div class="seguridad-item">
+                              <div class="seguridad-icon security-icon">
+                                <i class="bi bi-shield-check"></i>
+                              </div>
+                              <div class="seguridad-info">
+                                <h4>Autenticación de Dos Factores</h4>
+                                <p>Agrega una capa extra de seguridad a tu cuenta</p>
+                                <span class="status-badge badge-warning">Desactivado</span>
+                              </div>
+                              <button class="btn btn-secondary" disabled>
+                                <i class="bi bi-toggle-off"></i> Próximamente
+                              </button>
+                            </div>
+                            <!-- Historial de Sesiones -->
+                            <div class="seguridad-item">
+                              <div class="seguridad-icon session-icon">
+                                <i class="bi bi-clock-history"></i>
+                              </div>
+                              <div class="seguridad-info">
+                                <h4>Historial de Sesiones</h4>
+                                <p>Revisa los dispositivos y ubicaciones donde has iniciado sesión</p>
+                                <span class="session-count">1 sesión activa</span>
+                              </div>
+                              <button class="btn btn-secondary" disabled>
+                                <i class="bi bi-list-ul"></i> Próximamente
+                              </button>
+                            </div>
+                            <!-- Información de la Cuenta -->
+                            <div class="seguridad-item">
+                              <div class="seguridad-icon info-icon">
+                                <i class="bi bi-info-circle-fill"></i>
+                              </div>
+                              <div class="seguridad-info">
+                                <h4>Información de la Cuenta</h4>
+                                <p>Fecha de registro: <strong>{{ perfil.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</strong></p>
+                                <span class="last-change">Estado: <span class="badge badge-success">{{ perfil.Estado }}</span></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
+              }
 
-              <!-- Información de Contacto -->
-              <div class="form-section">
-                <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label><i class="bi bi-envelope"></i> Email *</label>
-                    <input 
-                      type="email" 
-                      [(ngModel)]="formularioPerfil.email" 
-                      name="email" 
-                      required 
-                      placeholder="ejemplo@correo.com"
-                    />
+              <!-- MODAL CAMBIAR CONTRASEÑA -->
+              @if (mostrarModalPassword) {
+                <div class="modal-overlay" (click)="cerrarModalPassword()">
+                  <div class="modal modal-password" (click)="$event.stopPropagation()">
+                    <!-- Header del Modal -->
+                    <div class="modal-header">
+                      <h2>
+                        <i class="bi bi-key-fill"></i>
+                        Cambiar Contraseña
+                      </h2>
+                      <button (click)="cerrarModalPassword()" class="btn-close">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                    <!-- Body del Modal -->
+                    <div class="modal-body">
+                      <!-- Alert de Recomendaciones -->
+                      <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                          <strong>Recomendaciones de seguridad:</strong>
+                          <ul>
+                            <li>Usa al menos 8 caracteres</li>
+                            <li>Combina letras mayúsculas y minúsculas</li>
+                            <li>Incluye números y símbolos</li>
+                            <li>No uses contraseñas comunes</li>
+                            <li>No compartas tu contraseña con nadie</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <!-- Formulario -->
+                      <form (ngSubmit)="cambiarPassword()">
+                        <!-- Contraseña Actual -->
+                        <div class="form-group">
+                          <label><i class="bi bi-lock"></i> Contraseña Actual *</label>
+                          <div class="password-input">
+                            <input
+                              [type]="mostrarPasswordActual ? 'text' : 'password'"
+                              [(ngModel)]="formularioPassword.password_actual"
+                              name="password_actual"
+                              required
+                              placeholder="Ingrese su contraseña actual"
+                              autocomplete="current-password"
+                              />
+                              <button
+                                type="button"
+                                class="toggle-password"
+                                (click)="toggleMostrarPassword('actual')">
+                                <i [class]="mostrarPasswordActual ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <!-- Nueva Contraseña -->
+                          <div class="form-group">
+                            <label><i class="bi bi-lock-fill"></i> Nueva Contraseña *</label>
+                            <div class="password-input">
+                              <input
+                                [type]="mostrarPasswordNueva ? 'text' : 'password'"
+                                [(ngModel)]="formularioPassword.password_nueva"
+                                name="password_nueva"
+                                required
+                                placeholder="Ingrese su nueva contraseña"
+                                minlength="6"
+                                autocomplete="new-password"
+                                />
+                                <button
+                                  type="button"
+                                  class="toggle-password"
+                                  (click)="toggleMostrarPassword('nueva')">
+                                  <i [class]="mostrarPasswordNueva ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                </button>
+                              </div>
+                              <small class="form-text">Mínimo 6 caracteres</small>
+                            </div>
+                            <!-- Confirmar Nueva Contraseña -->
+                            <div class="form-group">
+                              <label><i class="bi bi-lock-fill"></i> Confirmar Nueva Contraseña *</label>
+                              <div class="password-input">
+                                <input
+                                  [type]="mostrarPasswordConfirmacion ? 'text' : 'password'"
+                                  [(ngModel)]="formularioPassword.password_confirmacion"
+                                  name="password_confirmacion"
+                                  required
+                                  placeholder="Confirme su nueva contraseña"
+                                  minlength="6"
+                                  autocomplete="new-password"
+                                  />
+                                  <button
+                                    type="button"
+                                    class="toggle-password"
+                                    (click)="toggleMostrarPassword('confirmacion')">
+                                    <i [class]="mostrarPasswordConfirmacion ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                          <!-- Footer del Modal -->
+                          <div class="modal-footer">
+                            <button (click)="cerrarModalPassword()" type="button" class="btn btn-secondary">
+                              <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                            <button (click)="cambiarPassword()" type="button" class="btn btn-primary" [disabled]="loading">
+                              <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+                              {{ loading ? 'Actualizando...' : 'Actualizar Contraseña' }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- ERROR SI NO HAY PERFIL -->
+                    @if (!loadingPerfil && !perfil) {
+                      <div class="error-perfil">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h3>No se pudo cargar el perfil</h3>
+                        <p>Hubo un error al obtener los datos de tu perfil</p>
+                        <button class="btn btn-primary" (click)="cargarPerfil()">
+                          <i class="bi bi-arrow-clockwise"></i> Reintentar
+                        </button>
+                      </div>
+                    }
+
                   </div>
-
-                  <div class="form-group">
-                    <label><i class="bi bi-telephone"></i> Teléfono</label>
-                    <input 
-                      type="text" 
-                      [(ngModel)]="formularioPerfil.telefono" 
-                      name="telefono" 
-                      placeholder="999999999"
-                      maxlength="9"
-                    />
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label><i class="bi bi-geo-alt"></i> Dirección</label>
-                  <input 
-                    type="text" 
-                    [(ngModel)]="formularioPerfil.direccion" 
-                    name="direccion" 
-                    placeholder="Dirección completa"
-                  />
-                </div>
-              </div>
-
-              <!-- Botones de Acción -->
-              <div class="form-actions">
-                <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
-                  <i class="bi bi-x-circle"></i> Cancelar
-                </button>
-                <button type="submit" class="btn btn-primary" [disabled]="loading">
-                  <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
-                  {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- TAB: SEGURIDAD -->
-        <div *ngIf="tabActiva === 'seguridad'" class="tab-content">
-          <div class="content-header">
-            <h3><i class="bi bi-shield-lock"></i> Configuración de Seguridad</h3>
-          </div>
-
-          <div class="seguridad-section">
-            
-            <!-- Cambiar Contraseña -->
-            <div class="seguridad-item">
-              <div class="seguridad-icon">
-                <i class="bi bi-key-fill"></i>
-              </div>
-              <div class="seguridad-info">
-                <h4>Contraseña</h4>
-                <p>Cambia tu contraseña regularmente para mantener tu cuenta segura</p>
-                <span class="last-change">Se recomienda cambiarla cada 3 meses</span>
-              </div>
-              <button class="btn btn-primary" (click)="abrirModalPassword()">
-                <i class="bi bi-key"></i> Cambiar Contraseña
-              </button>
-            </div>
-
-            <!-- Autenticación de Dos Factores -->
-            <div class="seguridad-item">
-              <div class="seguridad-icon security-icon">
-                <i class="bi bi-shield-check"></i>
-              </div>
-              <div class="seguridad-info">
-                <h4>Autenticación de Dos Factores</h4>
-                <p>Agrega una capa extra de seguridad a tu cuenta</p>
-                <span class="status-badge badge-warning">Desactivado</span>
-              </div>
-              <button class="btn btn-secondary" disabled>
-                <i class="bi bi-toggle-off"></i> Próximamente
-              </button>
-            </div>
-
-            <!-- Historial de Sesiones -->
-            <div class="seguridad-item">
-              <div class="seguridad-icon session-icon">
-                <i class="bi bi-clock-history"></i>
-              </div>
-              <div class="seguridad-info">
-                <h4>Historial de Sesiones</h4>
-                <p>Revisa los dispositivos y ubicaciones donde has iniciado sesión</p>
-                <span class="session-count">1 sesión activa</span>
-              </div>
-              <button class="btn btn-secondary" disabled>
-                <i class="bi bi-list-ul"></i> Próximamente
-              </button>
-            </div>
-
-            <!-- Información de la Cuenta -->
-            <div class="seguridad-item">
-              <div class="seguridad-icon info-icon">
-                <i class="bi bi-info-circle-fill"></i>
-              </div>
-              <div class="seguridad-info">
-                <h4>Información de la Cuenta</h4>
-                <p>Fecha de registro: <strong>{{ perfil.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</strong></p>
-                <span class="last-change">Estado: <span class="badge badge-success">{{ perfil.Estado }}</span></span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL CAMBIAR CONTRASEÑA -->
-  <div *ngIf="mostrarModalPassword" class="modal-overlay" (click)="cerrarModalPassword()">
-    <div class="modal modal-password" (click)="$event.stopPropagation()">
-      
-      <!-- Header del Modal -->
-      <div class="modal-header">
-        <h2>
-          <i class="bi bi-key-fill"></i>
-          Cambiar Contraseña
-        </h2>
-        <button (click)="cerrarModalPassword()" class="btn-close">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <!-- Body del Modal -->
-      <div class="modal-body">
-        
-        <!-- Alert de Recomendaciones -->
-        <div class="alert alert-info">
-          <i class="bi bi-info-circle"></i>
-          <div>
-            <strong>Recomendaciones de seguridad:</strong>
-            <ul>
-              <li>Usa al menos 8 caracteres</li>
-              <li>Combina letras mayúsculas y minúsculas</li>
-              <li>Incluye números y símbolos</li>
-              <li>No uses contraseñas comunes</li>
-              <li>No compartas tu contraseña con nadie</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Formulario -->
-        <form (ngSubmit)="cambiarPassword()">
-          
-          <!-- Contraseña Actual -->
-          <div class="form-group">
-            <label><i class="bi bi-lock"></i> Contraseña Actual *</label>
-            <div class="password-input">
-              <input 
-                [type]="mostrarPasswordActual ? 'text' : 'password'"
-                [(ngModel)]="formularioPassword.password_actual" 
-                name="password_actual" 
-                required 
-                placeholder="Ingrese su contraseña actual"
-                autocomplete="current-password"
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                (click)="toggleMostrarPassword('actual')">
-                <i [class]="mostrarPasswordActual ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Nueva Contraseña -->
-          <div class="form-group">
-            <label><i class="bi bi-lock-fill"></i> Nueva Contraseña *</label>
-            <div class="password-input">
-              <input 
-                [type]="mostrarPasswordNueva ? 'text' : 'password'"
-                [(ngModel)]="formularioPassword.password_nueva" 
-                name="password_nueva" 
-                required 
-                placeholder="Ingrese su nueva contraseña"
-                minlength="6"
-                autocomplete="new-password"
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                (click)="toggleMostrarPassword('nueva')">
-                <i [class]="mostrarPasswordNueva ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-              </button>
-            </div>
-            <small class="form-text">Mínimo 6 caracteres</small>
-          </div>
-
-          <!-- Confirmar Nueva Contraseña -->
-          <div class="form-group">
-            <label><i class="bi bi-lock-fill"></i> Confirmar Nueva Contraseña *</label>
-            <div class="password-input">
-              <input 
-                [type]="mostrarPasswordConfirmacion ? 'text' : 'password'"
-                [(ngModel)]="formularioPassword.password_confirmacion" 
-                name="password_confirmacion" 
-                required 
-                placeholder="Confirme su nueva contraseña"
-                minlength="6"
-                autocomplete="new-password"
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                (click)="toggleMostrarPassword('confirmacion')">
-                <i [class]="mostrarPasswordConfirmacion ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-              </button>
-            </div>
-          </div>
-
-        </form>
-      </div>
-
-      <!-- Footer del Modal -->
-      <div class="modal-footer">
-        <button (click)="cerrarModalPassword()" type="button" class="btn btn-secondary">
-          <i class="bi bi-x-circle"></i> Cancelar
-        </button>
-        <button (click)="cambiarPassword()" type="button" class="btn btn-primary" [disabled]="loading">
-          <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
-          {{ loading ? 'Actualizando...' : 'Actualizar Contraseña' }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ERROR SI NO HAY PERFIL -->
-  <div *ngIf="!loadingPerfil && !perfil" class="error-perfil">
-    <i class="bi bi-exclamation-triangle"></i>
-    <h3>No se pudo cargar el perfil</h3>
-    <p>Hubo un error al obtener los datos de tu perfil</p>
-    <button class="btn btn-primary" (click)="cargarPerfil()">
-      <i class="bi bi-arrow-clockwise"></i> Reintentar
-    </button>
-  </div>
-
-</div>

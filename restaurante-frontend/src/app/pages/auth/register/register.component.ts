@@ -1,7 +1,7 @@
 // src/app/pages/auth/register/register.component.ts
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,7 +25,7 @@ interface RegistroResponse {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })

@@ -2,20 +2,22 @@
   <div class="header">
     <h1><i [class]="'bi ' + config.icono"></i> Gestión de {{ config.nombrePlural }}</h1>
     <div class="header-actions">
-      <button 
-        *ngIf="!verInactivos"
-        class="btn btn-icon-only btn-trash" 
-        (click)="toggleVerInactivos()"
-        [title]="'Ver ' + config.nombrePlural.toLowerCase() + ' inactivos'">
-        <i class="bi bi-trash"></i>
-      </button>
-      
-      <button 
-        *ngIf="verInactivos"
-        class="btn btn-secondary" 
-        (click)="toggleVerInactivos()">
-        <i class="bi bi-arrow-left-circle"></i> Volver a Activos
-      </button>
+      @if (!verInactivos) {
+        <button
+          class="btn btn-icon-only btn-trash"
+          (click)="toggleVerInactivos()"
+          [title]="'Ver ' + config.nombrePlural.toLowerCase() + ' inactivos'">
+          <i class="bi bi-trash"></i>
+        </button>
+      }
+
+      @if (verInactivos) {
+        <button
+          class="btn btn-secondary"
+          (click)="toggleVerInactivos()">
+          <i class="bi bi-arrow-left-circle"></i> Volver a Activos
+        </button>
+      }
 
       <button class="btn btn-primary" (click)="abrirModalCrear()">
         <i class="bi bi-plus-circle"></i> Nuevo {{ config.nombreSingular }}
@@ -33,377 +35,373 @@
           (input)="buscar()"
           placeholder="Buscar por nombre, email o teléfono..."
           class="input-busqueda"
-        />
+          />
+        </div>
       </div>
-    </div>
 
-    <div class="filtros-activos" *ngIf="tieneFiltrosActivos()">
-      <span class="filtro-tag" *ngIf="filtros.busqueda">
-        <i class="bi bi-search"></i>
-        "{{ filtros.busqueda }}"
-        <button class="tag-close" (click)="limpiarBusqueda()">
-          <i class="bi bi-x"></i>
-        </button>
-      </span>
-
-      <button class="limpiar-filtros" (click)="limpiarTodosFiltros()">
-        <i class="bi bi-x-circle"></i>
-        Limpiar filtros
-      </button>
-    </div>
-  </div>
-
-  <div *ngIf="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Cargando {{ config.nombrePlural.toLowerCase() }}...</p>
-  </div>
-
-  <div *ngIf="!loading" class="tabla-container">
-    <div class="tabla-header">
-      <h3>
-        <i [class]="verInactivos ? 'bi bi-trash-fill' : 'bi ' + config.icono"></i>
-        {{ config.nombrePlural }} {{ verInactivos ? 'Inactivos' : 'Activos' }}
-      </h3>
-      <span class="badge" [ngClass]="verInactivos ? 'badge-danger' : 'badge-success'">
-        {{ totalRegistros }} {{ totalRegistros === 1 ? config.nombreSingular.toLowerCase() : config.nombrePlural.toLowerCase() }}
-      </span>
-    </div>
-
-    <table class="tabla">
-      <thead>
-        <tr>
-          <th>Nombres</th>
-          <th>Apellidos</th>
-          <th>Email</th>
-          <th>Teléfono</th>
-          <th>Estado</th>
-          <th>Fecha Registro</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let usuario of usuarios">
-          <td>{{ usuario.Nombres }}</td>
-          <td>{{ usuario.Apellidos }}</td>
-          <td>
-            <i class="bi bi-envelope"></i> {{ usuario.Email }}
-          </td>
-          <td>
-            <i class="bi bi-telephone"></i> {{ usuario.Telefono || '-' }}
-          </td>
-          <td>
-            <span class="badge" [ngClass]="getEstadoBadgeClass(usuario.Estado)">
-              {{ usuario.Estado }}
+      @if (tieneFiltrosActivos()) {
+        <div class="filtros-activos">
+          @if (filtros.busqueda) {
+            <span class="filtro-tag">
+              <i class="bi bi-search"></i>
+              "{{ filtros.busqueda }}"
+              <button class="tag-close" (click)="limpiarBusqueda()">
+                <i class="bi bi-x"></i>
+              </button>
             </span>
-          </td>
-          <td>{{ usuario.Fecha_Registro | date: 'dd/MM/yyyy' }}</td>
-          <td class="acciones">
-            <button 
-              (click)="abrirModalDetalles(usuario)" 
-              class="btn-icon btn-view" 
-              title="Ver detalles">
-              <i class="bi bi-eye"></i>
-            </button>
-
-            <button 
-              (click)="abrirModalEditar(usuario)" 
-              class="btn-icon btn-edit" 
-              title="Editar">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            
-            <button 
-              *ngIf="usuario.Estado === 'Activo'"
-              (click)="cambiarEstado(usuario, 'Inactivo')" 
-              class="btn-icon btn-disable" 
-              title="Desactivar">
-              <i class="bi bi-x-circle"></i>
-            </button>
-            <button 
-              *ngIf="usuario.Estado === 'Inactivo' || usuario.Estado === 'Suspendido'"
-              (click)="cambiarEstado(usuario, 'Activo')" 
-              class="btn-icon btn-enable" 
-              title="Activar">
-              <i class="bi bi-check-circle"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div *ngIf="usuarios.length === 0" class="sin-resultados">
-      <i [class]="verInactivos ? 'bi bi-trash' : 'bi bi-inbox'"></i>
-      <p>No se encontraron {{ config.nombrePlural.toLowerCase() }} {{ verInactivos ? 'inactivos' : 'activos' }}</p>
-    </div>
-  </div>
-
-  <div *ngIf="!loading && totalPaginas > 0" class="paginacion">
-    <div class="paginacion-info">
-      <span class="info-text">
-        <i class="bi bi-file-earmark-text"></i>
-        Mostrando {{ (paginaActual - 1) * (filtros.registrosPorPagina || 10) + 1 }} 
-        a {{ Math.min(paginaActual * (filtros.registrosPorPagina || 10), totalRegistros) }} 
-        de {{ totalRegistros }} registros
-      </span>
-      
-      <select 
-        [(ngModel)]="filtros.registrosPorPagina" 
-        (change)="cambiarRegistrosPorPagina()" 
-        class="select-paginacion">
-        <option *ngFor="let opcion of opcionesPorPagina" [value]="opcion">
-          {{ opcion }} por página
-        </option>
-      </select>
+          }
+          <button class="limpiar-filtros" (click)="limpiarTodosFiltros()">
+            <i class="bi bi-x-circle"></i>
+            Limpiar filtros
+          </button>
+        </div>
+      }
     </div>
 
-    <div class="paginacion-controles">
-      <button 
-        (click)="cambiarPagina(paginaActual - 1)" 
-        [disabled]="paginaActual === 1"
-        class="btn btn-paginacion">
-        <i class="bi bi-chevron-left"></i> Anterior
-      </button>
-
-      <span class="pagina-actual">
-        Página {{ paginaActual }} de {{ totalPaginas }}
-      </span>
-
-      <button 
-        (click)="cambiarPagina(paginaActual + 1)" 
-        [disabled]="paginaActual === totalPaginas"
-        class="btn btn-paginacion">
-        Siguiente <i class="bi bi-chevron-right"></i>
-      </button>
-    </div>
-  </div>
-
-  <div *ngIf="mostrarModalDetalles && usuarioDetalles" class="modal-overlay" (click)="cerrarModalDetalles()">
-    <div class="modal modal-detalles" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>
-          <i class="bi bi-person-vcard-fill"></i>
-          Detalles del {{ config.nombreSingular }}
-        </h2>
-        <button (click)="cerrarModalDetalles()" class="btn-close">
-          <i class="bi bi-x-lg"></i>
-        </button>
+    @if (loading) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Cargando {{ config.nombrePlural.toLowerCase() }}...</p>
       </div>
+    }
 
-      <div class="modal-body modal-body-detalles">
-        <div class="usuario-card">
-          <div class="usuario-avatar">
-            <i class="bi bi-person-circle"></i>
-          </div>
-          <div class="usuario-info-principal">
-            <h3>{{ usuarioDetalles.Nombres }} {{ usuarioDetalles.Apellidos }}</h3>
-            <span class="badge" [ngClass]="getBadgeRolClass()">{{ config.emoji }} {{ config.nombreSingular }}</span>
-            <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)" style="margin-left: 8px;">
-              {{ usuarioDetalles.Estado }}
-            </span>
-          </div>
+    @if (!loading) {
+      <div class="tabla-container">
+        <div class="tabla-header">
+          <h3>
+            <i [class]="verInactivos ? 'bi bi-trash-fill' : 'bi ' + config.icono"></i>
+            {{ config.nombrePlural }} {{ verInactivos ? 'Inactivos' : 'Activos' }}
+          </h3>
+          <span class="badge" [ngClass]="verInactivos ? 'badge-danger' : 'badge-success'">
+            {{ totalRegistros }} {{ totalRegistros === 1 ? config.nombreSingular.toLowerCase() : config.nombrePlural.toLowerCase() }}
+          </span>
         </div>
-
-        <div class="seccion-detalles">
-          <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
-          <div class="detalles-grid">
-            <div class="detalle-item">
-                <label><i class="bi bi-person"></i> Nombres</label>
-                <span>{{ usuarioDetalles.Nombres }}</span>
-            </div>
-            <div class="detalle-item">
-                <label><i class="bi bi-person"></i> Apellidos</label>
-                <span>{{ usuarioDetalles.Apellidos }}</span>
-            </div>
-            <div class="detalle-item">
-                <label><i class="bi bi-gender-ambiguous"></i> Género</label>
-                <span>{{ usuarioDetalles.Genero || 'No especificado' }}</span>
-            </div>
-            <div class="detalle-item">
-                <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
-                <span>{{ usuarioDetalles.Fecha_Nacimiento ? (usuarioDetalles.Fecha_Nacimiento | date: 'dd/MM/yyyy') : 'No registrada' }}</span>
-            </div>
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Nombres</th>
+              <th>Apellidos</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Fecha Registro</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (usuario of usuarios; track usuario) {
+              <tr>
+                <td>{{ usuario.Nombres }}</td>
+                <td>{{ usuario.Apellidos }}</td>
+                <td>
+                  <i class="bi bi-envelope"></i> {{ usuario.Email }}
+                </td>
+                <td>
+                  <i class="bi bi-telephone"></i> {{ usuario.Telefono || '-' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getEstadoBadgeClass(usuario.Estado)">
+                    {{ usuario.Estado }}
+                  </span>
+                </td>
+                <td>{{ usuario.Fecha_Registro | date: 'dd/MM/yyyy' }}</td>
+                <td class="acciones">
+                  <button
+                    (click)="abrirModalDetalles(usuario)"
+                    class="btn-icon btn-view"
+                    title="Ver detalles">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button
+                    (click)="abrirModalEditar(usuario)"
+                    class="btn-icon btn-edit"
+                    title="Editar">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  @if (usuario.Estado === 'Activo') {
+                    <button
+                      (click)="cambiarEstado(usuario, 'Inactivo')"
+                      class="btn-icon btn-disable"
+                      title="Desactivar">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  }
+                  @if (usuario.Estado === 'Inactivo' || usuario.Estado === 'Suspendido') {
+                    <button
+                      (click)="cambiarEstado(usuario, 'Activo')"
+                      class="btn-icon btn-enable"
+                      title="Activar">
+                      <i class="bi bi-check-circle"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (usuarios.length === 0) {
+          <div class="sin-resultados">
+            <i [class]="verInactivos ? 'bi bi-trash' : 'bi bi-inbox'"></i>
+            <p>No se encontraron {{ config.nombrePlural.toLowerCase() }} {{ verInactivos ? 'inactivos' : 'activos' }}</p>
           </div>
+        }
+      </div>
+    }
+
+    @if (!loading && totalPaginas > 0) {
+      <div class="paginacion">
+        <div class="paginacion-info">
+          <span class="info-text">
+            <i class="bi bi-file-earmark-text"></i>
+            Mostrando {{ (paginaActual - 1) * (filtros.registrosPorPagina || 10) + 1 }}
+            a {{ Math.min(paginaActual * (filtros.registrosPorPagina || 10), totalRegistros) }}
+            de {{ totalRegistros }} registros
+          </span>
+          <select
+            [(ngModel)]="filtros.registrosPorPagina"
+            (change)="cambiarRegistrosPorPagina()"
+            class="select-paginacion">
+            @for (opcion of opcionesPorPagina; track opcion) {
+              <option [value]="opcion">
+                {{ opcion }} por página
+              </option>
+            }
+          </select>
         </div>
-
-        <div class="seccion-detalles">
-          <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
-          <div class="detalles-grid">
-            <div class="detalle-item">
-              <label><i class="bi bi-envelope"></i> Email</label>
-              <span>{{ usuarioDetalles.Email }}</span>
-            </div>
-            <div class="detalle-item">
-              <label><i class="bi bi-telephone"></i> Teléfono</label>
-              <span>{{ usuarioDetalles.Telefono || 'No registrado' }}</span>
-            </div>
-            <div class="detalle-item detalle-item-full">
-              <label><i class="bi bi-geo-alt"></i> Dirección</label>
-              <span>{{ usuarioDetalles.Direccion || 'No registrada' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="seccion-detalles">
-          <h4><i class="bi bi-gear-fill"></i> Información del Sistema</h4>
-          <div class="detalles-grid">
-            <div class="detalle-item">
-              <label><i class="bi bi-circle-fill"></i> Estado</label>
-              <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)">
-                {{ usuarioDetalles.Estado }}
-              </span>
-            </div>
-            <div class="detalle-item">
-              <label><i class="bi bi-calendar-check"></i> Fecha de Registro</label>
-              <span>{{ usuarioDetalles.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-          </div>
+        <div class="paginacion-controles">
+          <button
+            (click)="cambiarPagina(paginaActual - 1)"
+            [disabled]="paginaActual === 1"
+            class="btn btn-paginacion">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+          <span class="pagina-actual">
+            Página {{ paginaActual }} de {{ totalPaginas }}
+          </span>
+          <button
+            (click)="cambiarPagina(paginaActual + 1)"
+            [disabled]="paginaActual === totalPaginas"
+            class="btn btn-paginacion">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
         </div>
       </div>
+    }
 
-      <div class="modal-footer">
-        <button (click)="cerrarModalDetalles()" type="button" class="btn btn-secondary">
-          <i class="bi bi-x-circle"></i> Cerrar
-        </button>
-        <button (click)="abrirModalEditar(usuarioDetalles); cerrarModalDetalles()" type="button" class="btn btn-primary">
-          <i class="bi bi-pencil-square"></i> Editar {{ config.nombreSingular }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL CREAR/EDITAR -->
-  <div *ngIf="mostrarModal" class="modal-overlay" (click)="cerrarModal()">
-    <div class="modal modal-form" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>
-          <i [class]="modoModal === 'crear' ? 'bi bi-person-plus-fill' : 'bi bi-person-fill-gear'"></i>
-          {{ modoModal === 'crear' ? 'Nuevo ' + config.nombreSingular : 'Editar ' + config.nombreSingular }}
-        </h2>
-        <button (click)="cerrarModal()" class="btn-close">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <form (ngSubmit)="guardarUsuario()">
-          
-          <div class="form-section">
-            <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="bi bi-person"></i> Nombres *</label>
-                <input 
-                  type="text" 
-                  [(ngModel)]="formulario.nombres" 
-                  name="nombres" 
-                  required 
-                  placeholder="Ingrese nombres"
-                />
+    @if (mostrarModalDetalles && usuarioDetalles) {
+      <div class="modal-overlay" (click)="cerrarModalDetalles()">
+        <div class="modal modal-detalles" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>
+              <i class="bi bi-person-vcard-fill"></i>
+              Detalles del {{ config.nombreSingular }}
+            </h2>
+            <button (click)="cerrarModalDetalles()" class="btn-close">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <div class="modal-body modal-body-detalles">
+            <div class="usuario-card">
+              <div class="usuario-avatar">
+                <i class="bi bi-person-circle"></i>
               </div>
-
-              <div class="form-group">
-                <label><i class="bi bi-person"></i> Apellidos *</label>
-                <input 
-                  type="text" 
-                  [(ngModel)]="formulario.apellidos" 
-                  name="apellidos" 
-                  required 
-                  placeholder="Ingrese apellidos"
-                />
+              <div class="usuario-info-principal">
+                <h3>{{ usuarioDetalles.Nombres }} {{ usuarioDetalles.Apellidos }}</h3>
+                <span class="badge" [ngClass]="getBadgeRolClass()">{{ config.emoji }} {{ config.nombreSingular }}</span>
+                <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)" style="margin-left: 8px;">
+                  {{ usuarioDetalles.Estado }}
+                </span>
               </div>
             </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="bi bi-gender-ambiguous"></i> Género</label>
-                <select 
-                  [(ngModel)]="formulario.genero" 
-                  name="genero">
-                  <option value="">Seleccione género</option>
-                  <option value="Masculino">👨 Masculino</option>
-                  <option value="Femenino">👩 Femenino</option>
-                  <option value="Otro">🧑 Otro</option>
-                </select>
+            <div class="seccion-detalles">
+              <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
+              <div class="detalles-grid">
+                <div class="detalle-item">
+                  <label><i class="bi bi-person"></i> Nombres</label>
+                  <span>{{ usuarioDetalles.Nombres }}</span>
+                </div>
+                <div class="detalle-item">
+                  <label><i class="bi bi-person"></i> Apellidos</label>
+                  <span>{{ usuarioDetalles.Apellidos }}</span>
+                </div>
+                <div class="detalle-item">
+                  <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+                  <span>{{ usuarioDetalles.Genero || 'No especificado' }}</span>
+                </div>
+                <div class="detalle-item">
+                  <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
+                  <span>{{ usuarioDetalles.Fecha_Nacimiento ? (usuarioDetalles.Fecha_Nacimiento | date: 'dd/MM/yyyy') : 'No registrada' }}</span>
+                </div>
               </div>
-
-              <div class="form-group">
-                <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
-                <input 
-                  type="date" 
-                  [(ngModel)]="formulario.fecha_nacimiento" 
-                  name="fecha_nacimiento"
-                />
+            </div>
+            <div class="seccion-detalles">
+              <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
+              <div class="detalles-grid">
+                <div class="detalle-item">
+                  <label><i class="bi bi-envelope"></i> Email</label>
+                  <span>{{ usuarioDetalles.Email }}</span>
+                </div>
+                <div class="detalle-item">
+                  <label><i class="bi bi-telephone"></i> Teléfono</label>
+                  <span>{{ usuarioDetalles.Telefono || 'No registrado' }}</span>
+                </div>
+                <div class="detalle-item detalle-item-full">
+                  <label><i class="bi bi-geo-alt"></i> Dirección</label>
+                  <span>{{ usuarioDetalles.Direccion || 'No registrada' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="seccion-detalles">
+              <h4><i class="bi bi-gear-fill"></i> Información del Sistema</h4>
+              <div class="detalles-grid">
+                <div class="detalle-item">
+                  <label><i class="bi bi-circle-fill"></i> Estado</label>
+                  <span class="badge" [ngClass]="getEstadoBadgeClass(usuarioDetalles.Estado)">
+                    {{ usuarioDetalles.Estado }}
+                  </span>
+                </div>
+                <div class="detalle-item">
+                  <label><i class="bi bi-calendar-check"></i> Fecha de Registro</label>
+                  <span>{{ usuarioDetalles.Fecha_Registro | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="form-section">
-            <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label><i class="bi bi-envelope"></i> Email *</label>
-                <input 
-                  type="email" 
-                  [(ngModel)]="formulario.email" 
-                  name="email" 
-                  required 
-                  placeholder="ejemplo@correo.com"
-                />
-              </div>
-
-              <div class="form-group">
-                <label><i class="bi bi-telephone"></i> Teléfono</label>
-                <input 
-                  type="text" 
-                  [(ngModel)]="formulario.telefono" 
-                  name="telefono" 
-                  placeholder="999999999"
-                  maxlength="9"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label><i class="bi bi-geo-alt"></i> Dirección</label>
-              <input 
-                type="text" 
-                [(ngModel)]="formulario.direccion" 
-                name="direccion" 
-                placeholder="Dirección completa"
-              />
-            </div>
+          <div class="modal-footer">
+            <button (click)="cerrarModalDetalles()" type="button" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+            <button (click)="abrirModalEditar(usuarioDetalles); cerrarModalDetalles()" type="button" class="btn btn-primary">
+              <i class="bi bi-pencil-square"></i> Editar {{ config.nombreSingular }}
+            </button>
           </div>
+        </div>
+      </div>
+    }
 
-          <div class="form-section" *ngIf="modoModal === 'crear'">
-            <h4><i class="bi bi-key-fill"></i> Seguridad</h4>
-            
-            <div class="form-group">
-              <label><i class="bi bi-key"></i> Contraseña *</label>
-              <input 
-                type="password" 
-                [(ngModel)]="formulario.password" 
-                name="password" 
-                [required]="modoModal === 'crear'" 
-                placeholder="Mínimo 6 caracteres"
-                minlength="6"
-              />
-            </div>
+    <!-- MODAL CREAR/EDITAR -->
+    @if (mostrarModal) {
+      <div class="modal-overlay" (click)="cerrarModal()">
+        <div class="modal modal-form" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>
+              <i [class]="modoModal === 'crear' ? 'bi bi-person-plus-fill' : 'bi bi-person-fill-gear'"></i>
+              {{ modoModal === 'crear' ? 'Nuevo ' + config.nombreSingular : 'Editar ' + config.nombreSingular }}
+            </h2>
+            <button (click)="cerrarModal()" class="btn-close">
+              <i class="bi bi-x-lg"></i>
+            </button>
           </div>
-
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button (click)="cerrarModal()" type="button" class="btn btn-secondary">
-          <i class="bi bi-x-circle"></i> Cancelar
-        </button>
-        <button (click)="guardarUsuario()" type="button" class="btn btn-primary" [disabled]="loading">
-          <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
-          {{ loading ? 'Guardando...' : 'Guardar' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+          <div class="modal-body">
+            <form (ngSubmit)="guardarUsuario()">
+              <div class="form-section">
+                <h4><i class="bi bi-person-fill"></i> Información Personal</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label><i class="bi bi-person"></i> Nombres *</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="formulario.nombres"
+                      name="nombres"
+                      required
+                      placeholder="Ingrese nombres"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label><i class="bi bi-person"></i> Apellidos *</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="formulario.apellidos"
+                        name="apellidos"
+                        required
+                        placeholder="Ingrese apellidos"
+                        />
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label><i class="bi bi-gender-ambiguous"></i> Género</label>
+                        <select
+                          [(ngModel)]="formulario.genero"
+                          name="genero">
+                          <option value="">Seleccione género</option>
+                          <option value="Masculino">👨 Masculino</option>
+                          <option value="Femenino">👩 Femenino</option>
+                          <option value="Otro">🧑 Otro</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label><i class="bi bi-calendar"></i> Fecha de Nacimiento</label>
+                        <input
+                          type="date"
+                          [(ngModel)]="formulario.fecha_nacimiento"
+                          name="fecha_nacimiento"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-section">
+                      <h4><i class="bi bi-envelope-fill"></i> Información de Contacto</h4>
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label><i class="bi bi-envelope"></i> Email *</label>
+                          <input
+                            type="email"
+                            [(ngModel)]="formulario.email"
+                            name="email"
+                            required
+                            placeholder="ejemplo@correo.com"
+                            />
+                          </div>
+                          <div class="form-group">
+                            <label><i class="bi bi-telephone"></i> Teléfono</label>
+                            <input
+                              type="text"
+                              [(ngModel)]="formulario.telefono"
+                              name="telefono"
+                              placeholder="999999999"
+                              maxlength="9"
+                              />
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label><i class="bi bi-geo-alt"></i> Dirección</label>
+                            <input
+                              type="text"
+                              [(ngModel)]="formulario.direccion"
+                              name="direccion"
+                              placeholder="Dirección completa"
+                              />
+                            </div>
+                          </div>
+                          @if (modoModal === 'crear') {
+                            <div class="form-section">
+                              <h4><i class="bi bi-key-fill"></i> Seguridad</h4>
+                              <div class="form-group">
+                                <label><i class="bi bi-key"></i> Contraseña *</label>
+                                <input
+                                  type="password"
+                                  [(ngModel)]="formulario.password"
+                                  name="password"
+                                  [required]="modoModal === 'crear'"
+                                  placeholder="Mínimo 6 caracteres"
+                                  minlength="6"
+                                  />
+                                </div>
+                              </div>
+                            }
+                          </form>
+                        </div>
+                        <div class="modal-footer">
+                          <button (click)="cerrarModal()" type="button" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                          </button>
+                          <button (click)="guardarUsuario()" type="button" class="btn btn-primary" [disabled]="loading">
+                            <i [class]="loading ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+                            {{ loading ? 'Guardando...' : 'Guardar' }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>

@@ -1,13 +1,13 @@
 // src/app/features/auth/oblivion-password/oblivion-password.component.ts
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-oblivion-password',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     <div class="container">
       <h1>Recuperar Contraseña</h1>

@@ -13,56 +13,62 @@
   </div>
 
   <!-- ✅ BOTÓN VOLVER (Solo para admin en otra vista) -->
-  <div *ngIf="esAdmin() && !enVistaOriginal()" class="vista-alert">
-    <div class="vista-info">
-      <i class="bi bi-eye-fill"></i>
-      <span>Vista: <strong>{{ getNombreVistaActual() }}</strong></span>
+  @if (esAdmin() && !enVistaOriginal()) {
+    <div class="vista-alert">
+      <div class="vista-info">
+        <i class="bi bi-eye-fill"></i>
+        <span>Vista: <strong>{{ getNombreVistaActual() }}</strong></span>
+      </div>
+      <button (click)="volverVistaAdmin()" class="btn-volver">
+        <i class="bi bi-arrow-left-circle"></i>
+        Volver a Admin
+      </button>
     </div>
-    <button (click)="volverVistaAdmin()" class="btn-volver">
-      <i class="bi bi-arrow-left-circle"></i>
-      Volver a Admin
-    </button>
-  </div>
+  }
 
   <!-- Menú -->
   <nav class="sidebar-nav">
     <ul>
-      <li *ngFor="let item of menuItems">
-        
-        <!-- Item sin subitems -->
-        <a 
-          *ngIf="!item.subItems"
-          [routerLink]="item.path" 
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }">
-          <i [class]="item.icon"></i>
-          <span>{{ item.label }}</span>
-        </a>
-
-        <!-- Item con subitems -->
-        <div *ngIf="item.subItems" class="menu-item-with-submenu">
-          <a (click)="toggleSubmenu(item.label)" class="submenu-trigger">
-            <i [class]="item.icon"></i>
-            <span>{{ item.label }}</span>
-            <i class="bi bi-chevron-down toggle-icon" 
-               [class.rotated]="isSubmenuExpanded(item.label)"></i>
-          </a>
-
-          <!-- Submenu -->
-          <ul class="submenu" [class.expanded]="isSubmenuExpanded(item.label)">
-            <li *ngFor="let subItem of item.subItems">
-              <a 
-                [routerLink]="subItem.path" 
-                routerLinkActive="active"
-                (click)="onSubItemClick(subItem)"
-                class="sub-item">
-                <i [class]="subItem.icon"></i>
-                <span>{{ subItem.label }}</span>
+      @for (item of menuItems; track item) {
+        <li>
+          <!-- Item sin subitems -->
+          @if (!item.subItems) {
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }">
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+          <!-- Item con subitems -->
+          @if (item.subItems) {
+            <div class="menu-item-with-submenu">
+              <a (click)="toggleSubmenu(item.label)" class="submenu-trigger">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+                <i class="bi bi-chevron-down toggle-icon"
+                [class.rotated]="isSubmenuExpanded(item.label)"></i>
               </a>
-            </li>
-          </ul>
-        </div>
-      </li>
+              <!-- Submenu -->
+              <ul class="submenu" [class.expanded]="isSubmenuExpanded(item.label)">
+                @for (subItem of item.subItems; track subItem) {
+                  <li>
+                    <a
+                      [routerLink]="subItem.path"
+                      routerLinkActive="active"
+                      (click)="onSubItemClick(subItem)"
+                      class="sub-item">
+                      <i [class]="subItem.icon"></i>
+                      <span>{{ subItem.label }}</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </li>
+      }
     </ul>
   </nav>
 

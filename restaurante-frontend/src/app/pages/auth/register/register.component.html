@@ -17,130 +17,170 @@
           formControlName="nombres"
           placeholder="Ingresa tus nombres"
           [class.error]="nombres?.invalid && nombres?.touched"
-        />
-        <div class="error-message" *ngIf="nombres?.invalid && nombres?.touched">
-          <span *ngIf="nombres?.errors?.['required']">Los nombres son requeridos</span>
-          <span *ngIf="nombres?.errors?.['minlength']">Mínimo 2 caracteres</span>
-        </div>
-      </div>
-
-      <!-- Apellidos -->
-      <div class="form-group">
-        <label for="apellidos">Apellidos *</label>
-        <input
-          id="apellidos"
-          type="text"
-          formControlName="apellidos"
-          placeholder="Ingresa tus apellidos"
-          [class.error]="apellidos?.invalid && apellidos?.touched"
-        />
-        <div class="error-message" *ngIf="apellidos?.invalid && apellidos?.touched">
-          <span *ngIf="apellidos?.errors?.['required']">Los apellidos son requeridos</span>
-          <span *ngIf="apellidos?.errors?.['minlength']">Mínimo 2 caracteres</span>
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div class="form-group">
-        <label for="email">Correo Electrónico *</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="ejemplo@correo.com"
-          [class.error]="email?.invalid && email?.touched"
-        />
-        <div class="error-message" *ngIf="email?.invalid && email?.touched">
-          <span *ngIf="email?.errors?.['required']">El email es requerido</span>
-          <span *ngIf="email?.errors?.['email']">Email no válido</span>
-        </div>
-      </div>
-
-      <!-- Teléfono -->
-      <div class="form-group">
-        <label for="telefono">Teléfono (Opcional)</label>
-        <input
-          id="telefono"
-          type="tel"
-          formControlName="telefono"
-          placeholder="999999999"
-          [class.error]="telefono?.invalid && telefono?.touched"
-        />
-        <div class="error-message" *ngIf="telefono?.invalid && telefono?.touched">
-          <span *ngIf="telefono?.errors?.['pattern']">Debe tener entre 9 y 15 dígitos</span>
-        </div>
-      </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password">Contraseña *</label>
-        <div class="password-input">
-          <input
-            id="password"
-            [type]="showPassword ? 'text' : 'password'"
-            formControlName="password"
-            placeholder="Mínimo 6 caracteres"
-            [class.error]="password?.invalid && password?.touched"
           />
-          <button
-            type="button"
-            class="toggle-password"
-            (click)="togglePasswordVisibility()"
-          >
-            {{ showPassword ? '👁️' : '🙈' }}
-          </button>
+          @if (nombres?.invalid && nombres?.touched) {
+            <div class="error-message">
+              @if (nombres?.errors?.['required']) {
+                <span>Los nombres son requeridos</span>
+              }
+              @if (nombres?.errors?.['minlength']) {
+                <span>Mínimo 2 caracteres</span>
+              }
+            </div>
+          }
         </div>
-        <div class="error-message" *ngIf="password?.invalid && password?.touched">
-          <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
-          <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
-        </div>
-      </div>
 
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label for="confirmPassword">Confirmar Contraseña *</label>
-        <div class="password-input">
+        <!-- Apellidos -->
+        <div class="form-group">
+          <label for="apellidos">Apellidos *</label>
           <input
-            id="confirmPassword"
-            [type]="showConfirmPassword ? 'text' : 'password'"
-            formControlName="confirmPassword"
-            placeholder="Repite tu contraseña"
-            [class.error]="(confirmPassword?.invalid && confirmPassword?.touched) || (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched)"
-          />
-          <button
-            type="button"
-            class="toggle-password"
-            (click)="toggleConfirmPasswordVisibility()"
-          >
-            {{ showConfirmPassword ? '👁️' : '🙈' }}
-          </button>
-        </div>
-        <div class="error-message" *ngIf="confirmPassword?.touched">
-          <span *ngIf="confirmPassword?.errors?.['required']">Confirma tu contraseña</span>
-          <span *ngIf="registerForm.errors?.['passwordMismatch'] && !confirmPassword?.errors?.['required']">
-            Las contraseñas no coinciden
-          </span>
-        </div>
-      </div>
+            id="apellidos"
+            type="text"
+            formControlName="apellidos"
+            placeholder="Ingresa tus apellidos"
+            [class.error]="apellidos?.invalid && apellidos?.touched"
+            />
+            @if (apellidos?.invalid && apellidos?.touched) {
+              <div class="error-message">
+                @if (apellidos?.errors?.['required']) {
+                  <span>Los apellidos son requeridos</span>
+                }
+                @if (apellidos?.errors?.['minlength']) {
+                  <span>Mínimo 2 caracteres</span>
+                }
+              </div>
+            }
+          </div>
 
-      <!-- Error Message -->
-      <div class="alert alert-danger" *ngIf="errorMessage">
-        ⚠️ {{ errorMessage }}
-      </div>
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Correo Electrónico *</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="ejemplo@correo.com"
+              [class.error]="email?.invalid && email?.touched"
+              />
+              @if (email?.invalid && email?.touched) {
+                <div class="error-message">
+                  @if (email?.errors?.['required']) {
+                    <span>El email es requerido</span>
+                  }
+                  @if (email?.errors?.['email']) {
+                    <span>Email no válido</span>
+                  }
+                </div>
+              }
+            </div>
 
-      <!-- Submit Button -->
-      <button type="submit" class="btn-primary" [disabled]="loading || registerForm.invalid">
-        <span *ngIf="!loading">✨ Crear Cuenta</span>
-        <span *ngIf="loading">⏳ Creando cuenta...</span>
-      </button>
+            <!-- Teléfono -->
+            <div class="form-group">
+              <label for="telefono">Teléfono (Opcional)</label>
+              <input
+                id="telefono"
+                type="tel"
+                formControlName="telefono"
+                placeholder="999999999"
+                [class.error]="telefono?.invalid && telefono?.touched"
+                />
+                @if (telefono?.invalid && telefono?.touched) {
+                  <div class="error-message">
+                    @if (telefono?.errors?.['pattern']) {
+                      <span>Debe tener entre 9 y 15 dígitos</span>
+                    }
+                  </div>
+                }
+              </div>
 
-      <!-- Links -->
-      <div class="register-links">
-        <p>
-          ¿Ya tienes cuenta?
-          <a routerLink="/login" class="link-primary">Inicia sesión aquí</a>
-        </p>
-      </div>
-    </form>
-  </div>
-</div>
+              <!-- Password -->
+              <div class="form-group">
+                <label for="password">Contraseña *</label>
+                <div class="password-input">
+                  <input
+                    id="password"
+                    [type]="showPassword ? 'text' : 'password'"
+                    formControlName="password"
+                    placeholder="Mínimo 6 caracteres"
+                    [class.error]="password?.invalid && password?.touched"
+                    />
+                    <button
+                      type="button"
+                      class="toggle-password"
+                      (click)="togglePasswordVisibility()"
+                      >
+                      {{ showPassword ? '👁️' : '🙈' }}
+                    </button>
+                  </div>
+                  @if (password?.invalid && password?.touched) {
+                    <div class="error-message">
+                      @if (password?.errors?.['required']) {
+                        <span>La contraseña es requerida</span>
+                      }
+                      @if (password?.errors?.['minlength']) {
+                        <span>Mínimo 6 caracteres</span>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                  <label for="confirmPassword">Confirmar Contraseña *</label>
+                  <div class="password-input">
+                    <input
+                      id="confirmPassword"
+                      [type]="showConfirmPassword ? 'text' : 'password'"
+                      formControlName="confirmPassword"
+                      placeholder="Repite tu contraseña"
+                      [class.error]="(confirmPassword?.invalid && confirmPassword?.touched) || (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched)"
+                      />
+                      <button
+                        type="button"
+                        class="toggle-password"
+                        (click)="toggleConfirmPasswordVisibility()"
+                        >
+                        {{ showConfirmPassword ? '👁️' : '🙈' }}
+                      </button>
+                    </div>
+                    @if (confirmPassword?.touched) {
+                      <div class="error-message">
+                        @if (confirmPassword?.errors?.['required']) {
+                          <span>Confirma tu contraseña</span>
+                        }
+                        @if (registerForm.errors?.['passwordMismatch'] && !confirmPassword?.errors?.['required']) {
+                          <span>
+                            Las contraseñas no coinciden
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Error Message -->
+                  @if (errorMessage) {
+                    <div class="alert alert-danger">
+                      ⚠️ {{ errorMessage }}
+                    </div>
+                  }
+
+                  <!-- Submit Button -->
+                  <button type="submit" class="btn-primary" [disabled]="loading || registerForm.invalid">
+                    @if (!loading) {
+                      <span>✨ Crear Cuenta</span>
+                    }
+                    @if (loading) {
+                      <span>⏳ Creando cuenta...</span>
+                    }
+                  </button>
+
+                  <!-- Links -->
+                  <div class="register-links">
+                    <p>
+                      ¿Ya tienes cuenta?
+                      <a routerLink="/login" class="link-primary">Inicia sesión aquí</a>
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </div>

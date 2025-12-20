@@ -1,7 +1,7 @@
 // src/app/layout/sidebar/sidebar.component.ts
 
 import { Component, OnInit, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ROLES } from '../../shared/constants/roles.constants';
@@ -24,7 +24,7 @@ interface SubMenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })

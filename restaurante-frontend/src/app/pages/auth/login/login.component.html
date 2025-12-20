@@ -19,68 +19,86 @@
           formControlName="email"
           placeholder="ejemplo@correo.com"
           [class.error]="email?.invalid && email?.touched"
-        />
-        <div class="error-message" *ngIf="email?.invalid && email?.touched">
-          <span *ngIf="email?.errors?.['required']">⚠️ El email es requerido</span>
-          <span *ngIf="email?.errors?.['email']">⚠️ Email no válido</span>
-        </div>
-      </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password">
-          <i class="bi bi-lock"></i> Contraseña
-        </label>
-        <div class="password-input">
-          <input
-            id="password"
-            [type]="showPassword ? 'text' : 'password'"
-            formControlName="password"
-            placeholder="Ingresa tu contraseña"
-            [class.error]="password?.invalid && password?.touched"
           />
-          <button
-            type="button"
-            class="toggle-password"
-            (click)="togglePasswordVisibility()"
-          >
-            {{ showPassword ? '🙈' : '👁️' }}
+          @if (email?.invalid && email?.touched) {
+            <div class="error-message">
+              @if (email?.errors?.['required']) {
+                <span>⚠️ El email es requerido</span>
+              }
+              @if (email?.errors?.['email']) {
+                <span>⚠️ Email no válido</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">
+            <i class="bi bi-lock"></i> Contraseña
+          </label>
+          <div class="password-input">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Ingresa tu contraseña"
+              [class.error]="password?.invalid && password?.touched"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility()"
+                >
+                {{ showPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+            @if (password?.invalid && password?.touched) {
+              <div class="error-message">
+                @if (password?.errors?.['required']) {
+                  <span>⚠️ La contraseña es requerida</span>
+                }
+                @if (password?.errors?.['minlength']) {
+                  <span>⚠️ Mínimo 6 caracteres</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle"></i>
+              {{ errorMessage }}
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-primary" [disabled]="loading || loginForm.invalid">
+            @if (!loading) {
+              <span>
+                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+              </span>
+            }
+            @if (loading) {
+              <span>
+                <i class="bi bi-hourglass-split"></i> Cargando...
+              </span>
+            }
           </button>
-        </div>
-        <div class="error-message" *ngIf="password?.invalid && password?.touched">
-          <span *ngIf="password?.errors?.['required']">⚠️ La contraseña es requerida</span>
-          <span *ngIf="password?.errors?.['minlength']">⚠️ Mínimo 6 caracteres</span>
-        </div>
-      </div>
 
-      <!-- Error Message -->
-      <div class="alert alert-danger" *ngIf="errorMessage">
-        <i class="bi bi-exclamation-triangle"></i>
-        {{ errorMessage }}
+          <!-- Links -->
+          <div class="login-links">
+            <a routerLink="/auth/oblivion-password">
+              <i class="bi bi-question-circle"></i> ¿Olvidaste tu contraseña?
+            </a>
+            <p>
+              ¿No tienes cuenta?
+              <a routerLink="/auth/register">
+                <i class="bi bi-person-plus"></i> Regístrate aquí
+              </a>
+            </p>
+          </div>
+        </form>
       </div>
-
-      <!-- Submit Button -->
-      <button type="submit" class="btn-primary" [disabled]="loading || loginForm.invalid">
-        <span *ngIf="!loading">
-          <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
-        </span>
-        <span *ngIf="loading">
-          <i class="bi bi-hourglass-split"></i> Cargando...
-        </span>
-      </button>
-
-      <!-- Links -->
-      <div class="login-links">
-        <a routerLink="/auth/oblivion-password">
-          <i class="bi bi-question-circle"></i> ¿Olvidaste tu contraseña?
-        </a>
-        <p>
-          ¿No tienes cuenta?
-          <a routerLink="/auth/register">
-            <i class="bi bi-person-plus"></i> Regístrate aquí
-          </a>
-        </p>
-      </div>
-    </form>
-  </div>
-</div>
+    </div>

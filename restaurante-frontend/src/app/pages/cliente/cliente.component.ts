@@ -1,7 +1,7 @@
 // src/app/pages/cliente/cliente.component.ts
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component'; // ✅ AGREGADO
 
@@ -9,10 +9,9 @@ import { SidebarComponent } from '../../layout/sidebar/sidebar.component'; // �
   selector: 'app-cliente',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterOutlet, 
-    SidebarComponent // ✅ AGREGADO
-  ],
+    RouterOutlet,
+    SidebarComponent
+],
   templateUrl: './cliente.component.html',
   styleUrls: ['./cliente.component.scss']
 })

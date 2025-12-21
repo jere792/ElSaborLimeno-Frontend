@@ -27,19 +27,19 @@ import { ReportesComponent } from './pages/admin/reportes/reportes.component';
 // CAJERO COMPONENTS
 // ============================================
 import { CajeroComponent } from './pages/cajero/cajero.component';
-import { HomeComponent as CajeroHomeComponent } from './pages/cajero/home/home.component';
+import { HomeCajeroComponent } from './pages/cajero/home-cajero/home.component';
 import { CajaComponent } from './pages/cajero/caja/caja.component';
-import { PedidosComponent as CajeroPedidosComponent } from './pages/cajero/pedidos/pedidos.component';
-import { ProductosComponent as CajeroProductosComponent } from './pages/cajero/productos/productos.component';
+//import { PedidosComponent as CajeroPedidosComponent } from './pages/cajero/pedidos/pedidos.component';
+//import { CajeroProductosComponent } from './pages/cajero/productos/productos.component';
 
 // ============================================
 // CLIENTE COMPONENTS
 // ============================================
 import { ClienteComponent } from './pages/cliente/cliente.component';
-import { HomeComponent as ClienteHomeComponent } from './pages/cliente/home/home.component';
+import { HomeClienteComponent } from './pages/cliente/home-cliente/home-cliente.component';
 import { MenuComponent } from './pages/cliente/menu/menu.component';
 import { CarritoComponent } from './pages/cliente/carrito/carrito.component';
-import { PedidosComponent as ClientePedidosComponent } from './pages/cliente/pedidos/pedidos.component';
+//import { PedidosComponent as ClientePedidosComponent } from './pages/cliente/pedidos/pedidos.component';
 import { PerfilComponent } from './pages/cliente/perfil/perfil.component';
 import { ConfiguracionAdminComponent } from './pages/admin/configuracion-admin/configuracion-admin.component';
 import { PlatillosComponent } from './pages/admin/menu/platillos/platillos.component';
@@ -107,10 +107,10 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard([2])],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home', component: CajeroHomeComponent },
+      { path: 'home', component: HomeCajeroComponent },
       { path: 'caja', component: CajaComponent },
-      { path: 'pedidos', component: CajeroPedidosComponent },
-      { path: 'productos', component: CajeroProductosComponent }
+      //{ path: 'pedidos', component: CajeroPedidosComponent },
+      //{ path: 'productos', component: CajeroProductosComponent }
     ]
   },
 
@@ -123,10 +123,10 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard([3])],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home', component: ClienteHomeComponent },
+      { path: 'home', component: HomeClienteComponent },
       { path: 'menu', component: MenuComponent },
       { path: 'carrito', component: CarritoComponent },
-      { path: 'pedidos', component: ClientePedidosComponent },
+      //{ path: 'pedidos', component: ClientePedidosComponent },
       { path: 'perfil', component: PerfilComponent }
     ]
   },

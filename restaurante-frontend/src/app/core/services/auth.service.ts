@@ -16,6 +16,7 @@ export interface Usuario {
   id_rol: number;
   nombre_rol?: string;
   estado?: string;
+  foto_perfil?: string;  // ✅ AGREGAR ESTE CAMPO
 }
 
 interface LoginResponse {
@@ -73,6 +74,19 @@ export class AuthService {
     return this.currentUser$;
   }
 
+  // ✅ AGREGAR ESTE MÉTODO NUEVO
+  updateCurrentUser(userData: Partial<Usuario>): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const currentUser = this.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = { ...currentUser, ...userData };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        this.currentUserSubject.next(updatedUser);
+        console.log('✅ Usuario actualizado en memoria:', updatedUser);
+      }
+    }
+  }
+
   login(email: string, password: string): Observable<LoginResponse> {
     console.log('🔵 Ejecutando login en AuthService...');
     
@@ -85,7 +99,6 @@ export class AuthService {
         console.log('  - Tiene token?', !!response.token);
         console.log('  - Tiene usuario?', !!response.usuario);
         
-        // ✅ SIN verificar success
         if (response.token && response.usuario) {
           console.log('💾 EJECUTANDO setSession...');
           this.setSession(response.token, response.usuario);
@@ -113,7 +126,6 @@ export class AuthService {
       console.log('  ✅ Token guardado');
       console.log('  ✅ Usuario guardado');
       
-      // Verificar inmediatamente
       const check = localStorage.getItem('user');
       console.log('  🔍 Verificación inmediata:', check ? 'ENCONTRADO' : 'NO ENCONTRADO');
       

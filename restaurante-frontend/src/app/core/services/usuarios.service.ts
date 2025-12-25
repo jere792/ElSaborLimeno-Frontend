@@ -7,39 +7,40 @@ import { Observable } from 'rxjs';
 // ==================== INTERFACES ====================
 
 export interface UsuarioListado {
-  Id_Usuario: number;
-  Id_Documento?: number;
-  Id_Roles: number;
-  Nombres: string;
-  Apellidos: string;
-  Email: string;
-  Telefono?: string;
-  Fecha_Nacimiento?: Date;
-  Genero?: string;
-  Direccion?: string;
-  Estado: string;
-  Fecha_Registro: string;
-  Nombre_Rol: string;
-  Reservas_Canceladas?: number;
-  Reservas_NoShow?: number;
-  Estado_Reservas?: string;
-  Total_Registros?: number;
-  Total_Paginas?: number;
-  Pagina_Actual?: number;
+  id_usuario: number;
+  id_documento?: number;
+  id_roles: number;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+  genero?: string;
+  direccion?: string;
+  estado: string;
+  fecha_registro: string;
+  foto_perfil?: string;
+  nombre_rol: string;
+  reservas_canceladas?: number;
+  reservas_noshow?: number;
+  estado_reservas?: string;
+  total_registros?: number;
+  total_paginas?: number;
+  pagina_actual?: number;
 }
 
 export interface Rol {
-  Id_Roles: number;
-  Nombre: string;
-  Descripcion?: string;
+  id_roles: number;
+  nombre: string;
+  descripcion?: string;
 }
 
 export interface FiltrosUsuarios {
   pagina?: number;
-  registrosPorPagina?: number;
+  registros_por_pagina?: number;
   busqueda?: string;
   id_rol?: number;
-  ordenarPor?: string;
+  ordenar_por?: string;
   orden?: 'ASC' | 'DESC';
 }
 
@@ -87,19 +88,23 @@ export interface ActualizarUsuarioDto {
 }
 
 export interface PerfilUsuario {
-  Id_Usuario: number;
-  Id_Documento?: number;
-  Id_Roles: number;
-  Nombres: string;
-  Apellidos: string;
-  Email: string;
-  Telefono?: string;
-  Fecha_Nacimiento?: Date;
-  Genero?: string;
-  Direccion?: string;
-  Estado: string;
-  Fecha_Registro: Date;
-  Nombre_Rol: string;
+  id_usuario: number;
+  id_documento?: number;
+  id_rol: number;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+  genero?: string;
+  direccion?: string;
+  estado: string;
+  fecha_registro: string;
+  foto_perfil?: string;
+  nombre_rol?: string; 
+  reservas_canceladas?: number;
+  reservas_noshow?: number;
+  estado_reservas?: string;
 }
 
 export interface RespuestaPerfil {
@@ -123,6 +128,12 @@ export interface CambiarPasswordDto {
   password_nueva: string;
 }
 
+export interface RespuestaSubirFoto {
+  codigo: number;
+  mensaje: string;
+  url: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -136,10 +147,10 @@ export class UsuariosService {
     let params = new HttpParams();
     
     if (filtros.pagina) params = params.set('pagina', filtros.pagina.toString());
-    if (filtros.registrosPorPagina) params = params.set('registrosPorPagina', filtros.registrosPorPagina.toString());
+    if (filtros.registros_por_pagina) params = params.set('registrosPorPagina', filtros.registros_por_pagina.toString());
     if (filtros.busqueda) params = params.set('busqueda', filtros.busqueda);
     if (filtros.id_rol) params = params.set('id_rol', filtros.id_rol.toString());
-    if (filtros.ordenarPor) params = params.set('ordenarPor', filtros.ordenarPor);
+    if (filtros.ordenar_por) params = params.set('ordenarPor', filtros.ordenar_por);
     if (filtros.orden) params = params.set('orden', filtros.orden);
 
     return this.http.get<RespuestaListado>(`${this.apiUrl}/activos`, { params });
@@ -150,10 +161,10 @@ export class UsuariosService {
     let params = new HttpParams();
     
     if (filtros.pagina) params = params.set('pagina', filtros.pagina.toString());
-    if (filtros.registrosPorPagina) params = params.set('registrosPorPagina', filtros.registrosPorPagina.toString());
+    if (filtros.registros_por_pagina) params = params.set('registrosPorPagina', filtros.registros_por_pagina.toString());
     if (filtros.busqueda) params = params.set('busqueda', filtros.busqueda);
     if (filtros.id_rol) params = params.set('id_rol', filtros.id_rol.toString());
-    if (filtros.ordenarPor) params = params.set('ordenarPor', filtros.ordenarPor);
+    if (filtros.ordenar_por) params = params.set('ordenarPor', filtros.ordenar_por);
     if (filtros.orden) params = params.set('orden', filtros.orden);
 
     return this.http.get<RespuestaListado>(`${this.apiUrl}/inactivos`, { params });
@@ -201,17 +212,21 @@ export class UsuariosService {
 
   // ✅ ==================== PERFIL PROPIO ====================
   
-  // Obtener perfil del usuario autenticado
   obtenerMiPerfil(): Observable<RespuestaPerfil> {
     return this.http.get<RespuestaPerfil>(`${this.apiUrl}/perfil`);
   }
 
-  // Actualizar perfil propio
   actualizarMiPerfil(datos: ActualizarPerfilDto): Observable<any> {
     return this.http.put(`${this.apiUrl}/perfil`, datos);
   }
 
-  // Cambiar contraseña propia
+  subirFotoPerfil(file: File): Observable<RespuestaSubirFoto> {
+    const formData = new FormData();
+    formData.append('foto_perfil', file);
+    
+    return this.http.post<RespuestaSubirFoto>(`${this.apiUrl}/perfil/foto`, formData);
+  }
+
   cambiarMiPassword(datos: CambiarPasswordDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/perfil/cambiar-password`, datos);
   }

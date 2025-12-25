@@ -1,19 +1,33 @@
 // src/app/core/interceptors/auth.interceptor.ts
-
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
+import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // Obtener token del localStorage
-  const token = localStorage.getItem('token');
+  const authService = inject(AuthService);
+  const router = inject(Router);
   
-  // Si existe token, agregarlo al header
+  const token = authService.getToken();
+
+  let authReq = req;
   if (token) {
-    req = req.clone({
+    authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
   }
-  
-  return next(req);
+
+  return next(authReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        console.error('⚠️ 401 no autorizado, redirigiendo a login...');
+        authService.logout();
+        router.navigate(['/auth/login']);
+      }
+      return throwError(() => error);
+    })
+  );
 };

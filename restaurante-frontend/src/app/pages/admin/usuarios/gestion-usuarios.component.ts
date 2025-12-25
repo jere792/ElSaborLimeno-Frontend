@@ -1,3 +1,5 @@
+// src/app/pages/admin/usuarios/gestion-usuarios.component.ts
+
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,7 +51,7 @@ export class GestionUsuariosComponent implements OnInit {
 
   filtros: FiltrosUsuarios = {
     pagina: 1,
-    registrosPorPagina: 10,
+    registros_por_pagina: 10,
     busqueda: '',
     id_rol: ROLES.CLIENTE
   };
@@ -58,6 +60,11 @@ export class GestionUsuariosComponent implements OnInit {
   totalPaginas = 0;
   paginaActual = 1;
   opcionesPorPagina = [10, 20, 50, 100];
+
+  // Propiedades para foto de perfil
+  fotoSeleccionada: File | null = null;
+  previewFoto: string | null = null;
+  subiendoFoto = false;
 
   Math = Math;
 
@@ -121,7 +128,7 @@ export class GestionUsuariosComponent implements OnInit {
 
     observable.subscribe({
       next: (response: RespuestaListado) => {
-        this.usuarios = response.usuarios.filter(u => u.Id_Roles === this.config.idRol);
+        this.usuarios = response.usuarios.filter(u => u.id_roles === this.config.idRol);
         this.totalRegistros = this.usuarios.length;
         this.totalPaginas = response.paginacion.total_paginas;
         this.paginaActual = response.paginacion.pagina_actual;
@@ -149,15 +156,10 @@ export class GestionUsuariosComponent implements OnInit {
     return !!this.filtros.busqueda;
   }
 
-  limpiarBusqueda(): void {
-    this.filtros.busqueda = '';
-    this.buscar();
-  }
-
   limpiarTodosFiltros(): void {
     this.filtros = {
       pagina: 1,
-      registrosPorPagina: this.filtros.registrosPorPagina,
+      registros_por_pagina: this.filtros.registros_por_pagina,
       busqueda: '',
       id_rol: this.config.idRol
     };
@@ -187,30 +189,35 @@ export class GestionUsuariosComponent implements OnInit {
     this.usuarioSeleccionado = usuario;
     
     let fechaFormateada: string | undefined = undefined;
-    if (usuario.Fecha_Nacimiento) {
-      const fecha = new Date(usuario.Fecha_Nacimiento);
+    if (usuario.fecha_nacimiento) {
+      const fecha = new Date(usuario.fecha_nacimiento);
       if (!isNaN(fecha.getTime())) {
         fechaFormateada = fecha.toISOString().split('T')[0];
       }
     }
     
     this.formulario = {
-      id_documento: usuario.Id_Documento || 1,
+      id_documento: usuario.id_documento || 1,
       id_roles: this.config.idRol,
-      nombres: usuario.Nombres,
-      apellidos: usuario.Apellidos,
-      email: usuario.Email,
+      nombres: usuario.nombres,
+      apellidos: usuario.apellidos,
+      email: usuario.email,
       password: '',
-      telefono: usuario.Telefono || '',
+      telefono: usuario.telefono || '',
       fecha_nacimiento: fechaFormateada,
-      genero: usuario.Genero || '',
-      direccion: usuario.Direccion || ''
+      genero: usuario.genero || '',
+      direccion: usuario.direccion || ''
     };
+    
+    // Limpiar foto seleccionada al abrir modal de edición
+    this.cancelarFoto();
+    
     this.mostrarModal = true;
   }
 
   cerrarModal(): void {
     this.mostrarModal = false;
+    this.cancelarFoto();
     this.limpiarFormulario();
   }
 
@@ -238,6 +245,17 @@ export class GestionUsuariosComponent implements OnInit {
   cerrarModalDetalles(): void {
     this.mostrarModalDetalles = false;
     this.usuarioDetalles = null;
+  }
+
+  getFotoUsuario(usuario: UsuarioListado | null): string {
+    if (usuario?.foto_perfil) {
+      return usuario.foto_perfil;
+    }
+    return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+  }
+
+  tieneFoto(usuario: UsuarioListado | null): boolean {
+    return !!(usuario?.foto_perfil);
   }
 
   guardarUsuario(): void {
@@ -337,7 +355,7 @@ export class GestionUsuariosComponent implements OnInit {
       direccion: this.formulario.direccion?.trim() || undefined
     };
 
-    this.usuariosService.actualizarUsuario(this.usuarioSeleccionado.Id_Usuario, datos).subscribe({
+    this.usuariosService.actualizarUsuario(this.usuarioSeleccionado.id_usuario, datos).subscribe({
       next: (response: any) => {
         console.log(`${this.config.nombreSingular} actualizado:`, response);
         alert(`${this.config.nombreSingular} actualizado exitosamente`);
@@ -355,8 +373,8 @@ export class GestionUsuariosComponent implements OnInit {
   cambiarEstado(usuario: UsuarioListado, nuevoEstado: string): void {
     const accion = nuevoEstado === 'Activo' ? 'activar' : 'desactivar';
     
-    if (confirm(`¿Está seguro que desea ${accion} a ${usuario.Nombres} ${usuario.Apellidos}?`)) {
-      this.usuariosService.cambiarEstado(usuario.Id_Usuario, nuevoEstado).subscribe({
+    if (confirm(`¿Está seguro que desea ${accion} a ${usuario.nombres} ${usuario.apellidos}?`)) {
+      this.usuariosService.cambiarEstado(usuario.id_usuario, nuevoEstado).subscribe({
         next: () => {
           console.log(`Estado cambiado a ${nuevoEstado}`);
           alert(`${this.config.nombreSingular} ${nuevoEstado.toLowerCase()} exitosamente`);
@@ -381,5 +399,116 @@ export class GestionUsuariosComponent implements OnInit {
 
   getBadgeRolClass(): string {
     return this.tipoRol === 'admin' ? 'badge-admin' : 'badge-success';
+  }
+
+  // ==================== GESTIÓN DE FOTO DE PERFIL ====================
+
+  abrirSelectorFoto(): void {
+    const input = document.getElementById('input-foto-usuario') as HTMLInputElement;
+    if (input) {
+      input.click();
+    }
+  }
+
+  onFotoSeleccionada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      if (!this.validarTipoImagen(file)) {
+        alert('⚠️ Solo se permiten imágenes (JPG, JPEG, PNG, GIF)');
+        input.value = '';
+        return;
+      }
+      
+      if (!this.validarTamañoImagen(file)) {
+        alert('⚠️ La imagen no debe superar los 5MB');
+        input.value = '';
+        return;
+      }
+      
+      this.fotoSeleccionada = file;
+      this.generarPreview(file);
+    }
+  }
+
+  validarTipoImagen(file: File): boolean {
+    const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    return tiposPermitidos.includes(file.type);
+  }
+
+  validarTamañoImagen(file: File): boolean {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    return file.size <= maxSize;
+  }
+
+  generarPreview(file: File): void {
+    const reader = new FileReader();
+    
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        this.previewFoto = e.target.result as string;
+        console.log('✅ Preview generado');
+      }
+    };
+    
+    reader.readAsDataURL(file);
+  }
+
+  subirFotoUsuario(): void {
+    if (!this.fotoSeleccionada) {
+      alert('⚠️ Seleccione una imagen primero');
+      return;
+    }
+
+    if (!this.usuarioSeleccionado) {
+      alert('⚠️ Debe seleccionar un usuario');
+      return;
+    }
+
+    if (!confirm('¿Está seguro que desea actualizar la foto de perfil?')) {
+      return;
+    }
+
+    this.subiendoFoto = true;
+    console.log('📤 Subiendo foto al servidor...');
+
+    this.usuariosService.subirFotoPerfil(this.fotoSeleccionada).subscribe({
+      next: (response) => {
+        console.log('✅ Respuesta del servidor:', response);
+        alert('✅ Foto de perfil actualizada correctamente');
+        
+        this.subiendoFoto = false;
+        this.cancelarFoto();
+        this.cerrarModal();
+        this.cargarUsuarios();
+      },
+      error: (error) => {
+        console.error('❌ Error al subir foto:', error);
+        alert('❌ ' + (error.error?.mensaje || 'Error al subir la foto'));
+        this.subiendoFoto = false;
+      }
+    });
+  }
+
+  cancelarFoto(): void {
+    this.fotoSeleccionada = null;
+    this.previewFoto = null;
+    
+    const input = document.getElementById('input-foto-usuario') as HTMLInputElement;
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  getFotoActual(): string {
+    if (this.previewFoto) {
+      return this.previewFoto;
+    }
+    if (this.usuarioSeleccionado?.foto_perfil) {
+      return this.usuarioSeleccionado.foto_perfil;
+    }
+    return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
   }
 }

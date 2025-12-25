@@ -1,7 +1,7 @@
 export const ROLES = {
   ADMIN: 1,
   CAJERO: 2,
-  CLIENTE: 3
+  CLIENTE: 3,
 } as const;
 
 export const ROLES_CONFIG = {

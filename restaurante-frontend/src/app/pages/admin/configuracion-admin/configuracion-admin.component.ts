@@ -30,7 +30,6 @@ interface FormularioPerfilData {
 export class ConfiguracionAdminComponent implements OnInit {
   perfil: PerfilUsuario | null = null;
   
-  // ✅ Usar la interfaz local
   formularioPerfil: FormularioPerfilData = {
     nombres: '',
     apellidos: '',
@@ -56,20 +55,33 @@ export class ConfiguracionAdminComponent implements OnInit {
   mostrarPasswordConfirmacion = false;
   tabActiva: 'informacion' | 'seguridad' = 'informacion';
 
+  // Propiedades para foto de perfil
+  fotoSeleccionada: File | null = null;
+  previewFoto: string | null = null;
+  subiendoFoto = false;
+
   constructor(private usuariosService: UsuariosService) {}
 
   ngOnInit(): void {
     this.cargarPerfil();
   }
 
+  // ==================== GESTIÓN DE PERFIL ====================
+
   cargarPerfil(): void {
     this.loadingPerfil = true;
 
     this.usuariosService.obtenerMiPerfil().subscribe({
       next: (response) => {
+        console.log('📦 Respuesta completa del servidor:', response);
+        console.log('👤 Usuario:', response.usuario);
+        console.log('📸 Foto en respuesta:', response.usuario?.foto_perfil);
+        
         this.perfil = response.usuario;
         this.loadingPerfil = false;
-        console.log('✅ Perfil cargado:', this.perfil);
+        
+        console.log('📸 Foto en this.perfil:', this.perfil?.foto_perfil);
+        console.log('✅ Perfil cargado correctamente');
       },
       error: (error) => {
         console.error('❌ Error al cargar perfil:', error);
@@ -84,23 +96,22 @@ export class ConfiguracionAdminComponent implements OnInit {
 
     this.modoEdicion = true;
     
-    // ✅ Convertir fecha a formato YYYY-MM-DD
     let fechaFormateada: string | undefined = undefined;
-    if (this.perfil.Fecha_Nacimiento) {
-      const fecha = new Date(this.perfil.Fecha_Nacimiento);
+    if (this.perfil.fecha_nacimiento) {
+      const fecha = new Date(this.perfil.fecha_nacimiento);
       if (!isNaN(fecha.getTime())) {
         fechaFormateada = fecha.toISOString().split('T')[0];
       }
     }
     
     this.formularioPerfil = {
-      nombres: this.perfil.Nombres,
-      apellidos: this.perfil.Apellidos,
-      email: this.perfil.Email,
-      telefono: this.perfil.Telefono || '',
-      fecha_nacimiento: fechaFormateada,  // ✅ Ahora es string
-      genero: this.perfil.Genero || '',
-      direccion: this.perfil.Direccion || ''
+      nombres: this.perfil.nombres,
+      apellidos: this.perfil.apellidos,
+      email: this.perfil.email,
+      telefono: this.perfil.telefono || '',
+      fecha_nacimiento: fechaFormateada,
+      genero: this.perfil.genero || '',
+      direccion: this.perfil.direccion || ''
     };
   }
 
@@ -116,19 +127,17 @@ export class ConfiguracionAdminComponent implements OnInit {
 
     this.loading = true;
 
-    // ✅ Convertir fecha string a Date si existe
     let fechaNacimiento: Date | undefined = undefined;
     if (this.formularioPerfil.fecha_nacimiento) {
       fechaNacimiento = new Date(this.formularioPerfil.fecha_nacimiento);
     }
 
-    // ✅ Crear objeto con el tipo correcto
     const datos: ActualizarPerfilDto = {
       nombres: this.formularioPerfil.nombres,
       apellidos: this.formularioPerfil.apellidos,
       email: this.formularioPerfil.email,
       telefono: this.formularioPerfil.telefono,
-      fecha_nacimiento: fechaNacimiento,  // ✅ Date | undefined
+      fecha_nacimiento: fechaNacimiento,
       genero: this.formularioPerfil.genero,
       direccion: this.formularioPerfil.direccion
     };
@@ -177,6 +186,8 @@ export class ConfiguracionAdminComponent implements OnInit {
       direccion: ''
     };
   }
+
+  // ==================== GESTIÓN DE CONTRASEÑA ====================
 
   abrirModalPassword(): void {
     this.mostrarModalPassword = true;
@@ -252,13 +263,6 @@ export class ConfiguracionAdminComponent implements OnInit {
     this.mostrarPasswordConfirmacion = false;
   }
 
-  cambiarTab(tab: 'informacion' | 'seguridad'): void {
-    this.tabActiva = tab;
-    if (this.modoEdicion) {
-      this.cancelarEdicion();
-    }
-  }
-
   toggleMostrarPassword(campo: 'actual' | 'nueva' | 'confirmacion'): void {
     switch (campo) {
       case 'actual':
@@ -273,11 +277,22 @@ export class ConfiguracionAdminComponent implements OnInit {
     }
   }
 
+  // ==================== GESTIÓN DE TABS ====================
+
+  cambiarTab(tab: 'informacion' | 'seguridad'): void {
+    this.tabActiva = tab;
+    if (this.modoEdicion) {
+      this.cancelarEdicion();
+    }
+  }
+
+  // ==================== UTILIDADES ====================
+
   calcularAntiguedad(): string {
-    if (!this.perfil?.Fecha_Registro) return 'N/A';
+    if (!this.perfil?.fecha_registro) return 'N/A';
 
     const ahora = new Date();
-    const registro = new Date(this.perfil.Fecha_Registro);
+    const registro = new Date(this.perfil.fecha_registro);
     const diff = ahora.getTime() - registro.getTime();
     const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
 
@@ -304,8 +319,153 @@ export class ConfiguracionAdminComponent implements OnInit {
 
   obtenerIniciales(): string {
     if (!this.perfil) return '??';
-    const nombres = this.perfil.Nombres || '';
-    const apellidos = this.perfil.Apellidos || '';
+    const nombres = this.perfil.nombres || '';
+    const apellidos = this.perfil.apellidos || '';
     return `${nombres.charAt(0)}${apellidos.charAt(0)}`.toUpperCase();
+  }
+
+  // ==================== GESTIÓN DE FOTO DE PERFIL ====================
+
+  getFotoActual(): string {
+    if (this.previewFoto) {
+      console.log('🔍 Usando preview:', this.previewFoto);
+      return this.previewFoto;
+    }
+    if (this.perfil?.foto_perfil) {
+      console.log('🔍 Usando foto del perfil:', this.perfil.foto_perfil);
+      return this.perfil.foto_perfil;
+    }
+    console.log('⚠️ No hay foto disponible');
+    return '';
+  }
+
+  tieneFoto(): boolean {
+    const hasFoto = !!(this.previewFoto || this.perfil?.foto_perfil);
+    console.log('🔍 tieneFoto:', hasFoto, 'URL:', this.perfil?.foto_perfil);
+    return hasFoto;
+  }
+
+  // ✅ MANEJAR ERROR DE CARGA DE IMAGEN
+  onImageError(event: any): void {
+    console.error('❌ Error al cargar imagen');
+    console.log('🔍 URL que falló:', event.target.src);
+    
+    // Ocultar la imagen y mostrar iniciales
+    event.target.style.display = 'none';
+    const parent = event.target.parentElement;
+    if (parent) {
+      const iniciales = parent.querySelector('.avatar-iniciales');
+      if (iniciales) {
+        (iniciales as HTMLElement).style.display = 'flex';
+      }
+    }
+  }
+
+  abrirSelectorFoto(): void {
+    const input = document.getElementById('input-foto-perfil') as HTMLInputElement;
+    if (input) {
+      input.click();
+    }
+  }
+
+  onFotoSeleccionada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      if (!this.validarTipoImagen(file)) {
+        alert('⚠️ Solo se permiten imágenes (JPG, JPEG, PNG, GIF)');
+        input.value = '';
+        return;
+      }
+      
+      if (!this.validarTamañoImagen(file)) {
+        alert('⚠️ La imagen no debe superar los 5MB');
+        input.value = '';
+        return;
+      }
+      
+      this.fotoSeleccionada = file;
+      this.generarPreview(file);
+    }
+  }
+
+  validarTipoImagen(file: File): boolean {
+    const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    return tiposPermitidos.includes(file.type);
+  }
+
+  validarTamañoImagen(file: File): boolean {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    return file.size <= maxSize;
+  }
+
+  generarPreview(file: File): void {
+    const reader = new FileReader();
+    
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        this.previewFoto = e.target.result as string;
+        console.log('✅ Preview generado');
+      }
+    };
+    
+    reader.readAsDataURL(file);
+  }
+
+  subirFoto(): void {
+    if (!this.fotoSeleccionada) {
+      alert('⚠️ Seleccione una imagen primero');
+      return;
+    }
+
+    if (!confirm('¿Está seguro que desea actualizar su foto de perfil?')) {
+      return;
+    }
+
+    this.subiendoFoto = true;
+    console.log('📤 Subiendo foto al servidor...');
+
+    this.usuariosService.subirFotoPerfil(this.fotoSeleccionada).subscribe({
+      next: (response) => {
+        console.log('✅ Respuesta del servidor:', response);
+        alert('✅ Foto de perfil actualizada correctamente');
+        
+        this.subiendoFoto = false;
+        this.fotoSeleccionada = null;
+        this.previewFoto = null;
+        
+        const input = document.getElementById('input-foto-perfil') as HTMLInputElement;
+        if (input) input.value = '';
+        
+        // ✅ RECARGAR PERFIL PARA MOSTRAR LA NUEVA FOTO
+        console.log('🔄 Recargando perfil...');
+        this.cargarPerfil();
+      },
+      error: (error) => {
+        console.error('❌ Error al subir foto:', error);
+        alert('❌ ' + (error.error?.mensaje || 'Error al subir la foto'));
+        this.subiendoFoto = false;
+      }
+    });
+  }
+
+  cancelarFoto(): void {
+    this.fotoSeleccionada = null;
+    this.previewFoto = null;
+    
+    const input = document.getElementById('input-foto-perfil') as HTMLInputElement;
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  eliminarFoto(): void {
+    if (!confirm('¿Está seguro que desea eliminar su foto de perfil?')) {
+      return;
+    }
+
+    alert('⚠️ Funcionalidad en desarrollo');
   }
 }

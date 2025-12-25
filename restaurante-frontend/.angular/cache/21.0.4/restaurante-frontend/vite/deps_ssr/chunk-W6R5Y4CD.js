@@ -1,11 +1,11 @@
 import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
-  withHttpTransferCache
-} from "./chunk-D6LS63WN.js";
-import {
   CommonModule,
   PLATFORM_BROWSER_ID
 } from "./chunk-4UKZMTXR.js";
+import {
+  withHttpTransferCache
+} from "./chunk-D6LS63WN.js";
 import {
   DomAdapter,
   XhrFactory,
@@ -1747,4 +1747,4 @@ export {
   provideClientHydration,
   VERSION
 };
-//# sourceMappingURL=chunk-UOVECO5O.js.map
+//# sourceMappingURL=chunk-W6R5Y4CD.js.map
